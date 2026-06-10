@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { CreateProspectSchema, UpdateProspectSchema, ProspectStatusSchema } from '@crm/contracts';
+import { CreateProspectSchema, UpdateProspectSchema, StatusTransitionSchema } from '@crm/contracts';
 import { prisma } from '../lib/prisma.js';
+import { executeRule } from '../services/status-rules/index.js';
 
 export const prospectsRouter = Router();
 
@@ -78,22 +79,41 @@ prospectsRouter.patch('/:id', async (req, res) => {
     }
 });
 
-// PATCH /api/prospects/:id/status  — explicit status transition endpoint
+// PATCH /api/prospects/:id/status  — transactional status transition with automation
 prospectsRouter.patch('/:id/status', async (req, res) => {
-    const result = ProspectStatusSchema.safeParse(req.body.status);
+    const result = StatusTransitionSchema.safeParse(req.body);
     if (!result.success) {
-        res.status(400).json({ error: 'Invalid status', issues: result.error.issues });
+        res.status(400).json({ error: 'Validation failed', issues: result.error.issues });
         return;
     }
 
+    const { status: newStatus } = result.data;
+
     try {
-        const prospect = await prisma.prospect.update({
-            where: { id: req.params.id },
-            data: { status: result.data },
+        const { prospect, ruleResult } = await prisma.$transaction(async (tx) => {
+            const current = await tx.prospect.findUnique({ where: { id: req.params.id } });
+            if (!current) {
+                throw Object.assign(new Error('Prospect not found'), { code: 'P2025' });
+            }
+
+            const updated = await tx.prospect.update({
+                where: { id: req.params.id },
+                data: { status: newStatus },
+            });
+
+            const ruleResult = await executeRule({ tx, prospect: current, newStatus });
+
+            return { prospect: updated, ruleResult };
         });
-        res.json(prospect);
+
+        res.json({
+            prospect,
+            createdTasks: ruleResult.createdTasks,
+            closedTasksCount: ruleResult.closedTasksCount,
+            activityEvents: ruleResult.activityEvents,
+        });
     } catch (err: unknown) {
-        if (isPrismaNotFoundError(err)) {
+        if (isPrismaNotFoundError(err) || (err instanceof Error && err.message === 'Prospect not found')) {
             res.status(404).json({ error: 'Prospect not found' });
             return;
         }

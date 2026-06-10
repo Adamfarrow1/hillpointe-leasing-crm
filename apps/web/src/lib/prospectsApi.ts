@@ -18,6 +18,13 @@ export interface UpdateProspectPayload {
     assignedUnit?: string | null;
 }
 
+export interface StatusTransitionResult {
+    prospect: Prospect;
+    createdTasks: { id: string; title: string; dueDate: string }[];
+    closedTasksCount: number;
+    activityEvents: { id: string; summary: string }[];
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
     const res = await fetch(url, {
         headers: { 'Content-Type': 'application/json' },
@@ -49,7 +56,7 @@ export const prospectsApi = {
         request<Prospect>(`${BASE}/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
 
     changeStatus: (id: string, status: ProspectStatus) =>
-        request<Prospect>(`${BASE}/${id}/status`, {
+        request<StatusTransitionResult>(`${BASE}/${id}/status`, {
             method: 'PATCH',
             body: JSON.stringify({ status }),
         }),

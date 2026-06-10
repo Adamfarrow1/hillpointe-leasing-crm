@@ -16,6 +16,7 @@ export const ActivityEventSchema = z.object({
     prospectId: z.string().nullable(),
     unitId: z.string().nullable(),
     summary: z.string(),
+    createdAt: z.string(),
 });
 
 export type ActivityEventType = z.infer<typeof ActivityEventTypeSchema>;

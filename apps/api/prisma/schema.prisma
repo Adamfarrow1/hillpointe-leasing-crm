@@ -16,12 +16,51 @@ model Unit {
 }
 
 model Prospect {
-  id           String   @id @default(cuid())
+  id           String          @id @default(cuid())
   name         String
-  email        String   @unique
+  email        String          @unique
   phone        String
-  status       String   @default("new")
+  status       String          @default("new")
   assignedUnit String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  tasks        Task[]
+  activity     ActivityEvent[]
+  tours        Tour[]
+}
+
+model Task {
+  id           String   @id @default(cuid())
+  title        String
+  dueDate      String
+  assignee     String?
+  prospectId   String
+  prospect     Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  state        String   @default("open")
+  priority     String   @default("medium")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model ActivityEvent {
+  id         String   @id @default(cuid())
+  type       String
+  timestamp  DateTime @default(now())
+  prospectId String?
+  prospect   Prospect? @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+  unitId     String?
+  summary    String
+  createdAt  DateTime @default(now())
+}
+
+model Tour {
+  id          String   @id @default(cuid())
+  prospectId  String
+  prospect    Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  unitId      String?
+  scheduledAt DateTime
+  outcome     String?
+  agentName   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

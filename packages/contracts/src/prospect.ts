@@ -37,7 +37,12 @@ export const UpdateProspectSchema = z.object({
     assignedUnit: z.string().nullable().optional(),
 });
 
+export const StatusTransitionSchema = z.object({
+    status: ProspectStatusSchema,
+});
+
 export type ProspectStatus = z.infer<typeof ProspectStatusSchema>;
 export type Prospect = z.infer<typeof ProspectSchema>;
 export type CreateProspectInput = z.infer<typeof CreateProspectSchema>;
 export type UpdateProspectInput = z.infer<typeof UpdateProspectSchema>;
+export type StatusTransitionInput = z.infer<typeof StatusTransitionSchema>;

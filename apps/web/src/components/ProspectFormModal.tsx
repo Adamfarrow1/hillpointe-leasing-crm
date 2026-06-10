@@ -205,11 +205,10 @@ export function ProspectFormModal({ prospect, onSaved, onClose }: ProspectFormMo
 }
 
 function inputClass(hasError: boolean) {
-    return `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-1 transition-colors ${
-        hasError
+    return `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-1 transition-colors ${hasError
             ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
             : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-    }`;
+        }`;
 }
 
 function Field({

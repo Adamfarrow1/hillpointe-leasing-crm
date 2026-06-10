@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Prospect, ProspectStatus } from '@crm/contracts';
 import { prospectsApi } from '../lib/prospectsApi';
+import type { StatusTransitionResult } from '../lib/prospectsApi';
 import { StatusBadge } from './StatusBadge';
 
 const PIPELINE_STAGES: ProspectStatus[] = [
@@ -118,6 +119,8 @@ export function ProspectDrawer({ prospect, onClose, onEdit, onProspectChange }: 
     const currentStageIndex = PIPELINE_STAGES.indexOf(prospect.status);
     const [showStatusPicker, setShowStatusPicker] = useState(false);
     const [changingStatus, setChangingStatus] = useState(false);
+    const [statusError, setStatusError] = useState<string | null>(null);
+    const [automationResult, setAutomationResult] = useState<StatusTransitionResult | null>(null);
 
     return (
         <>
@@ -245,6 +248,9 @@ export function ProspectDrawer({ prospect, onClose, onEdit, onProspectChange }: 
                 {showStatusPicker && (
                     <div className="px-5 py-4 border-t border-gray-200 bg-gray-50">
                         <p className="text-xs font-semibold text-gray-500 mb-2">Select new status</p>
+                        {statusError && (
+                            <p className="mb-2 text-xs text-red-600">{statusError}</p>
+                        )}
                         <div className="flex flex-wrap gap-1.5">
                             {ALL_STATUSES.map((s) => (
                                 <button
@@ -252,10 +258,15 @@ export function ProspectDrawer({ prospect, onClose, onEdit, onProspectChange }: 
                                     disabled={s.value === prospect.status || changingStatus}
                                     onClick={async () => {
                                         setChangingStatus(true);
+                                        setStatusError(null);
+                                        setAutomationResult(null);
                                         try {
-                                            const updated = await prospectsApi.changeStatus(prospect.id, s.value);
-                                            onProspectChange(updated);
+                                            const result = await prospectsApi.changeStatus(prospect.id, s.value);
+                                            onProspectChange(result.prospect);
+                                            setAutomationResult(result);
                                             setShowStatusPicker(false);
+                                        } catch (err: unknown) {
+                                            setStatusError(err instanceof Error ? err.message : 'Status change failed');
                                         } finally {
                                             setChangingStatus(false);
                                         }
@@ -273,6 +284,34 @@ export function ProspectDrawer({ prospect, onClose, onEdit, onProspectChange }: 
                     </div>
                 )}
 
+                {/* Automation result banner */}
+                {automationResult && (
+                    <div className="px-5 py-3 border-t border-green-200 bg-green-50">
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-green-700 mb-1">
+                                    ✓ Status updated — automation ran
+                                </p>
+                                {automationResult.createdTasks.map((t) => (
+                                    <p key={t.id} className="text-xs text-green-600 truncate">
+                                        + Task: "{t.title}" (due {t.dueDate})
+                                    </p>
+                                ))}
+                                {automationResult.closedTasksCount > 0 && (
+                                    <p className="text-xs text-green-600">
+                                        ✓ {automationResult.closedTasksCount} task(s) auto-closed
+                                    </p>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => setAutomationResult(null)}
+                                className="text-green-500 hover:text-green-700 text-xs shrink-0"
+                                aria-label="Dismiss"
+                            >✕</button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Footer actions */}
                 <div className="px-5 py-4 border-t border-gray-200 flex gap-2">
                     <button
@@ -283,11 +322,10 @@ export function ProspectDrawer({ prospect, onClose, onEdit, onProspectChange }: 
                     </button>
                     <button
                         onClick={() => setShowStatusPicker((v) => !v)}
-                        className={`flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                            showStatusPicker
-                                ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                                : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
+                        className={`flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${showStatusPicker
+                            ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
                     >
                         {showStatusPicker ? 'Cancel' : 'Change Status'}
                     </button>
