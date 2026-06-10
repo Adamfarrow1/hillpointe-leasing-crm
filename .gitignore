@@ -22,6 +22,10 @@ pnpm-debug.log*
 .env.*
 !.env.example
 
+# Prisma / SQLite
+*.db
+*.db-journal
+
 # OS
 .DS_Store
 Thumbs.db

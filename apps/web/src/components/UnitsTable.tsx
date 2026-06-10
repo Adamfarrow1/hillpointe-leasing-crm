@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Unit } from '../types';
+import type { Unit } from '@crm/contracts';
 import { StatusBadge } from './StatusBadge';
 
 interface UnitsTableProps {
@@ -54,7 +54,7 @@ export function UnitsTable({ units, onEdit, onDelete }: UnitsTableProps) {
                     {units.map((unit) => (
                         <tr key={unit.id} className="hover:bg-gray-50 transition-colors">
                             <td className="py-3.5 px-4 font-medium text-gray-900">
-                                Unit {unit.name}
+                                Unit {unit.unitNumber}
                             </td>
                             <td className="py-3.5 px-4">
                                 <StatusBadge variant={unit.status} />

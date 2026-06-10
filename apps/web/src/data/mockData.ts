@@ -1,6 +1,34 @@
-import type { Prospect, Unit, Tour, Task } from '../types';
+import type { Unit } from '@crm/contracts';
+import type { ProspectStatus, TaskPriority } from '@crm/contracts';
 
-export const mockProspects: Prospect[] = [
+// Lightweight mock shapes for data that has no API yet
+interface MockProspect {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    status: ProspectStatus;
+    assignedUnit: string | null;
+    createdAt: string;
+}
+
+interface MockTour {
+    id: string;
+    prospectName: string;
+    unitName: string;
+    scheduledAt: string;
+    agentName: string;
+}
+
+interface MockTask {
+    id: string;
+    title: string;
+    dueDate: string;
+    prospectName: string;
+    priority: TaskPriority;
+}
+
+export const mockProspects: MockProspect[] = [
     {
         id: '1',
         name: 'Sarah Johnson',
@@ -94,19 +122,19 @@ export const mockProspects: Prospect[] = [
 ];
 
 export const mockUnits: Unit[] = [
-    { id: '1', name: 'Unit 101', status: 'held' },
-    { id: '2', name: 'Unit 108', status: 'leased' },
-    { id: '3', name: 'Unit 201', status: 'available' },
-    { id: '4', name: 'Unit 204', status: 'held' },
-    { id: '5', name: 'Unit 215', status: 'held' },
-    { id: '6', name: 'Unit 308', status: 'available' },
-    { id: '7', name: 'Unit 312', status: 'held' },
-    { id: '8', name: 'Unit 401', status: 'available' },
-    { id: '9', name: 'Unit 415', status: 'available' },
-    { id: '10', name: 'Unit 420', status: 'leased' },
+    { id: '1', unitNumber: '101', status: 'held', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+    { id: '2', unitNumber: '108', status: 'leased', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+    { id: '3', unitNumber: '201', status: 'available', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+    { id: '4', unitNumber: '204', status: 'held', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+    { id: '5', unitNumber: '215', status: 'held', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+    { id: '6', unitNumber: '308', status: 'available', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+    { id: '7', unitNumber: '312', status: 'held', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+    { id: '8', unitNumber: '401', status: 'available', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+    { id: '9', unitNumber: '415', status: 'available', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+    { id: '10', unitNumber: '420', status: 'leased', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
 ];
 
-export const mockUpcomingTours: Tour[] = [
+export const mockUpcomingTours: MockTour[] = [
     {
         id: '1',
         prospectName: 'Emily Chen',
@@ -137,7 +165,7 @@ export const mockUpcomingTours: Tour[] = [
     },
 ];
 
-export const mockOpenTasks: Task[] = [
+export const mockOpenTasks: MockTask[] = [
     {
         id: '1',
         title: 'Send tour availability to Marcus Williams',

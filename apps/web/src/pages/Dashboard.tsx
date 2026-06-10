@@ -1,13 +1,14 @@
+import { useState, useEffect } from 'react';
 import { KpiCard } from '../components/KpiCard';
 import { StatusBadge } from '../components/StatusBadge';
 import { PipelineFunnel } from '../components/PipelineFunnel';
+import { unitsApi } from '../lib/unitsApi';
 import {
     mockProspects,
-    mockUnits,
     mockUpcomingTours,
     mockOpenTasks,
 } from '../data/mockData';
-import type { ProspectStatus } from '../types';
+import type { ProspectStatus, Unit } from '@crm/contracts';
 
 function formatTourDate(isoString: string): string {
     const date = new Date(isoString);
@@ -27,10 +28,24 @@ function formatDueDate(dateStr: string): string {
 }
 
 export function Dashboard() {
+    const [units, setUnits] = useState<Unit[]>([]);
+    const [unitsLoading, setUnitsLoading] = useState(true);
+
+    useEffect(() => {
+        unitsApi.list()
+            .then(setUnits)
+            .catch(() => { /* non-critical — KPI will show 0 */ })
+            .finally(() => setUnitsLoading(false));
+    }, []);
+
     const totalProspects = mockProspects.length;
     const scheduledTours = mockUpcomingTours.length;
     const openTasks = mockOpenTasks.length;
-    const availableUnits = mockUnits.filter((u) => u.status === 'available').length;
+
+    const availableUnits = units.filter((u) => u.status === 'available').length;
+    const heldUnits = units.filter((u) => u.status === 'held').length;
+    const leasedUnits = units.filter((u) => u.status === 'leased').length;
+    const totalUnits = units.length;
 
     const prospectsByStatus = mockProspects.reduce<Partial<Record<ProspectStatus, number>>>(
         (acc, p) => { acc[p.status] = (acc[p.status] ?? 0) + 1; return acc; },
@@ -70,8 +85,8 @@ export function Dashboard() {
                 />
                 <KpiCard
                     label="Available Units"
-                    value={availableUnits}
-                    description="Ready to lease"
+                    value={unitsLoading ? 0 : availableUnits}
+                    description={unitsLoading ? 'Loading…' : `of ${totalUnits} total`}
                     accent="green"
                 />
             </div>
@@ -82,6 +97,52 @@ export function Dashboard() {
                     Prospect Pipeline
                 </h2>
                 <PipelineFunnel counts={pipelineCounts} />
+            </div>
+
+            {/* Unit Availability */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
+                        Unit Availability
+                    </h2>
+                    {!unitsLoading && (
+                        <span className="text-xs text-gray-500 font-medium">{totalUnits} total</span>
+                    )}
+                </div>
+                {unitsLoading ? (
+                    <div className="flex items-center gap-2 py-2">
+                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-gray-500">Loading units…</span>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-3 gap-4">
+                        {([
+                            { status: 'available', count: availableUnits, bar: 'bg-green-500', label: 'Available' },
+                            { status: 'held', count: heldUnits, bar: 'bg-amber-400', label: 'Held' },
+                            { status: 'leased', count: leasedUnits, bar: 'bg-red-500', label: 'Leased' },
+                        ] as const).map(({ status, count, bar }) => {
+                            const pct = totalUnits > 0 ? Math.round((count / totalUnits) * 100) : 0;
+                            return (
+                                <div key={status} className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`inline-block w-2 h-2 rounded-full ${bar}`} />
+                                            <StatusBadge variant={status} />
+                                        </div>
+                                        <span className="text-sm font-semibold text-gray-900">{count}</span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                        <div
+                                            className={`${bar} h-1.5 rounded-full transition-all`}
+                                            style={{ width: `${pct}%` }}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400">{pct}% of inventory</p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Tours + Tasks */}

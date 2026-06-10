@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import type { ProspectStatus } from '../types';
+import type { ProspectStatus } from '@crm/contracts';
 
 interface StageConfig {
     status: ProspectStatus;

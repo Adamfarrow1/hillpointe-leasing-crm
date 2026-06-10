@@ -1,4 +1,4 @@
-import type { ProspectStatus, UnitStatus, TaskPriority } from '../types';
+import type { ProspectStatus, UnitStatus, TaskPriority } from '@crm/contracts';
 
 type BadgeVariant = ProspectStatus | UnitStatus | TaskPriority;
 

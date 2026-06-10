@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Unit, UnitStatus } from '../types';
+import type { Unit, UnitStatus } from '@crm/contracts';
 
 const STATUS_OPTIONS: { value: UnitStatus; label: string }[] = [
     { value: 'available', label: 'Available' },
@@ -8,7 +8,7 @@ const STATUS_OPTIONS: { value: UnitStatus; label: string }[] = [
 ];
 
 export interface UnitFormValues {
-    name: string;
+    unitNumber: string;
     status: UnitStatus;
 }
 
@@ -18,16 +18,18 @@ interface UnitFormModalProps {
     existingNames: string[];
     onSubmit: (values: UnitFormValues) => void;
     onClose: () => void;
+    saving?: boolean;
+    serverError?: string | null;
 }
 
-export function UnitFormModal({ open, initial, existingNames, onSubmit, onClose }: UnitFormModalProps) {
+export function UnitFormModal({ open, initial, existingNames, onSubmit, onClose, saving = false, serverError = null }: UnitFormModalProps) {
     const [name, setName] = useState('');
     const [status, setStatus] = useState<UnitStatus>('available');
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (open) {
-            setName(initial?.name ?? '');
+            setName(initial?.unitNumber ?? '');
             setStatus(initial?.status ?? 'available');
             setError(null);
         }
@@ -43,13 +45,13 @@ export function UnitFormModal({ open, initial, existingNames, onSubmit, onClose 
             return;
         }
         const duplicate = existingNames
-            .filter((n) => !initial || n !== initial.name)
+            .filter((n) => !initial || n !== initial.unitNumber)
             .some((n) => n.toLowerCase() === trimmed.toLowerCase());
         if (duplicate) {
             setError('A unit with that number already exists.');
             return;
         }
-        onSubmit({ name: trimmed, status });
+        onSubmit({ unitNumber: trimmed, status });
     }
 
     return (
@@ -107,8 +109,8 @@ export function UnitFormModal({ open, initial, existingNames, onSubmit, onClose 
                         </select>
                     </div>
 
-                    {error && (
-                        <p className="text-sm text-red-600">{error}</p>
+                    {(error ?? serverError) !== null && (
+                        <p className="text-sm text-red-600">{error ?? serverError}</p>
                     )}
 
                     <div className="flex items-center justify-end gap-3 pt-2">
@@ -121,9 +123,10 @@ export function UnitFormModal({ open, initial, existingNames, onSubmit, onClose 
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                            disabled={saving}
+                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                         >
-                            {initial ? 'Save Changes' : 'Create Unit'}
+                            {saving ? 'Saving…' : initial ? 'Save Changes' : 'Create Unit'}
                         </button>
                     </div>
                 </form>
