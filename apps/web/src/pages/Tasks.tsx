@@ -103,9 +103,9 @@ function TaskCard({
 
     return (
         <div className={`flex items-start gap-4 px-4 py-3.5 rounded-lg border transition-colors ${done ? 'bg-gray-50 border-gray-100' :
-                overdue ? 'bg-red-50 border-red-100' :
-                    today ? 'bg-amber-50 border-amber-100' :
-                        'bg-white border-gray-200'
+            overdue ? 'bg-red-50 border-red-100' :
+                today ? 'bg-amber-50 border-amber-100' :
+                    'bg-white border-gray-200'
             }`}>
             {/* Complete / reopen button */}
             <button
@@ -113,10 +113,10 @@ function TaskCard({
                 disabled={completing || deleting}
                 aria-label={done ? 'Reopen task' : 'Mark complete'}
                 className={`mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors disabled:opacity-40 ${done
-                        ? 'bg-green-500 border-green-500 text-white hover:bg-green-600'
-                        : overdue
-                            ? 'border-red-400 text-transparent hover:bg-red-100 hover:text-red-500'
-                            : 'border-gray-300 text-transparent hover:bg-blue-50 hover:border-blue-400 hover:text-blue-500'
+                    ? 'bg-green-500 border-green-500 text-white hover:bg-green-600'
+                    : overdue
+                        ? 'border-red-400 text-transparent hover:bg-red-100 hover:text-red-500'
+                        : 'border-gray-300 text-transparent hover:bg-blue-50 hover:border-blue-400 hover:text-blue-500'
                     }`}
             >
                 {completing
@@ -147,9 +147,9 @@ function TaskCard({
             <div className="flex items-center gap-2 shrink-0">
                 <StatusBadge variant={task.priority} />
                 <span className={`text-xs font-medium ${done ? 'text-gray-400' :
-                        overdue ? 'text-red-600' :
-                            today ? 'text-amber-600' :
-                                'text-gray-500'
+                    overdue ? 'text-red-600' :
+                        today ? 'text-amber-600' :
+                            'text-gray-500'
                     }`}>
                     {formatDue(task.dueDate)}
                 </span>
@@ -241,8 +241,8 @@ function FilterTab({ label, active, onClick, count }: { label: string; active: b
         <button
             onClick={onClick}
             className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${active
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
         >
             {label}

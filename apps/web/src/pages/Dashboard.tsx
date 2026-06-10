@@ -57,23 +57,23 @@ export function Dashboard() {
     useEffect(() => {
         unitsApi.list()
             .then(setUnits)
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => setUnitsLoading(false));
         prospectsApi.list()
             .then(setProspects)
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => setProspectsLoading(false));
         toursApi.list()
             .then(setTours)
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => setToursLoading(false));
         tasksApi.list()
             .then(setTasks)
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => setTasksLoading(false));
         activityApi.list()
             .then((events) => setActivity(events.slice(0, 8)))
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => setActivityLoading(false));
     }, []);
 
