@@ -121,6 +121,48 @@ prospectsRouter.patch('/:id/status', async (req, res) => {
     }
 });
 
+// GET /api/prospects/:id/activity
+prospectsRouter.get('/:id/activity', async (req, res) => {
+    const prospect = await prisma.prospect.findUnique({ where: { id: req.params.id } });
+    if (!prospect) {
+        res.status(404).json({ error: 'Prospect not found' });
+        return;
+    }
+
+    const events = await prisma.activityEvent.findMany({
+        where: { prospectId: req.params.id },
+        include: {
+            prospect: { select: { id: true, name: true, email: true, status: true } },
+        },
+        orderBy: { timestamp: 'desc' },
+    });
+
+    // Batch-fetch any linked units
+    const unitIds = [...new Set(
+        events.map((e) => e.unitId).filter((id): id is string => id !== null),
+    )];
+    const unitRows = unitIds.length > 0
+        ? await prisma.unit.findMany({ where: { id: { in: unitIds } } })
+        : [];
+    const unitMap = new Map(unitRows.map((u) => [u.id, u]));
+
+    res.json(events.map((e) => ({
+        id: e.id,
+        type: e.type,
+        timestamp: e.timestamp.toISOString(),
+        prospectId: e.prospectId,
+        unitId: e.unitId,
+        summary: e.summary,
+        createdAt: e.createdAt.toISOString(),
+        prospect: e.prospect
+            ? { id: e.prospect.id, name: e.prospect.name, email: e.prospect.email, status: e.prospect.status }
+            : null,
+        unit: e.unitId
+            ? (() => { const u = unitMap.get(e.unitId as string); return u ? { id: u.id, unitNumber: u.unitNumber, status: u.status } : null; })()
+            : null,
+    })));
+});
+
 // DELETE /api/prospects/:id
 prospectsRouter.delete('/:id', async (req, res) => {
     try {

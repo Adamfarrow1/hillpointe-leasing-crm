@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import type { Prospect, ProspectStatus } from '@crm/contracts';
+import { useState, useEffect } from 'react';
+import type { Prospect, ProspectStatus, ActivityEventWithRelations } from '@crm/contracts';
 import { prospectsApi } from '../lib/prospectsApi';
 import type { StatusTransitionResult } from '../lib/prospectsApi';
+import { activityApi } from '../lib/activityApi';
 import { StatusBadge } from './StatusBadge';
+import { ActivityTimeline } from './ActivityTimeline';
 
 const PIPELINE_STAGES: ProspectStatus[] = [
     'new',
@@ -121,6 +123,17 @@ export function ProspectDrawer({ prospect, onClose, onEdit, onProspectChange }: 
     const [changingStatus, setChangingStatus] = useState(false);
     const [statusError, setStatusError] = useState<string | null>(null);
     const [automationResult, setAutomationResult] = useState<StatusTransitionResult | null>(null);
+    const [activity, setActivity] = useState<ActivityEventWithRelations[]>([]);
+    const [activityLoading, setActivityLoading] = useState(true);
+
+    useEffect(() => {
+        setActivityLoading(true);
+        activityApi
+            .getProspectActivity(prospect.id)
+            .then(setActivity)
+            .catch(() => setActivity([]))
+            .finally(() => setActivityLoading(false));
+    }, [prospect.id]);
 
     return (
         <>
@@ -241,6 +254,17 @@ export function ProspectDrawer({ prospect, onClose, onEdit, onProspectChange }: 
                                 })}
                             </ol>
                         )}
+                    </div>
+
+                    {/* Activity timeline */}
+                    <div className="px-5 py-4">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Activity</p>
+                        <ActivityTimeline
+                            events={activity}
+                            loading={activityLoading}
+                            compact
+                            emptyMessage="No activity recorded for this prospect yet."
+                        />
                     </div>
                 </div>
 
