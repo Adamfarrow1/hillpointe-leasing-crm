@@ -2,7 +2,7 @@ import type { Unit } from '@crm/contracts';
 import type { ProspectStatus, TaskPriority } from '@crm/contracts';
 
 // Lightweight mock shapes for data that has no API yet
-interface MockProspect {
+export interface MockProspect {
     id: string;
     name: string;
     email: string;

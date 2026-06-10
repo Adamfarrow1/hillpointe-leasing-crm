@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { KpiCard } from '../components/KpiCard';
 import { StatusBadge } from '../components/StatusBadge';
 import { PipelineFunnel } from '../components/PipelineFunnel';
 import { unitsApi } from '../lib/unitsApi';
+import { prospectsApi } from '../lib/prospectsApi';
 import {
-    mockProspects,
     mockUpcomingTours,
     mockOpenTasks,
 } from '../data/mockData';
-import type { ProspectStatus, Unit } from '@crm/contracts';
+import type { ProspectStatus, Unit, Prospect } from '@crm/contracts';
 
 function formatTourDate(isoString: string): string {
     const date = new Date(isoString);
@@ -27,18 +28,49 @@ function formatDueDate(dateStr: string): string {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function formatRelativeDate(isoString: string): string {
+    const diff = Date.now() - new Date(isoString).getTime();
+    const days = Math.floor(diff / 86_400_000);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days}d ago`;
+    return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+const AVATAR_COLORS = [
+    'bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-amber-500',
+    'bg-red-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500',
+];
+function avatarColor(id: string) {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffff;
+    return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+function initials(name: string) {
+    return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+}
+
 export function Dashboard() {
+    const navigate = useNavigate();
     const [units, setUnits] = useState<Unit[]>([]);
     const [unitsLoading, setUnitsLoading] = useState(true);
+    const [prospects, setProspects] = useState<Prospect[]>([]);
+    const [prospectsLoading, setProspectsLoading] = useState(true);
 
     useEffect(() => {
         unitsApi.list()
             .then(setUnits)
             .catch(() => { /* non-critical — KPI will show 0 */ })
             .finally(() => setUnitsLoading(false));
+        prospectsApi.list()
+            .then(setProspects)
+            .catch(() => { /* non-critical */ })
+            .finally(() => setProspectsLoading(false));
     }, []);
 
-    const totalProspects = mockProspects.length;
+    const recentProspects = prospects.slice(0, 5);
+
+    const totalProspects = prospects.length;
     const scheduledTours = mockUpcomingTours.length;
     const openTasks = mockOpenTasks.length;
 
@@ -47,7 +79,7 @@ export function Dashboard() {
     const leasedUnits = units.filter((u) => u.status === 'leased').length;
     const totalUnits = units.length;
 
-    const prospectsByStatus = mockProspects.reduce<Partial<Record<ProspectStatus, number>>>(
+    const prospectsByStatus = prospects.reduce<Partial<Record<ProspectStatus, number>>>(
         (acc, p) => { acc[p.status] = (acc[p.status] ?? 0) + 1; return acc; },
         {}
     );
@@ -67,8 +99,8 @@ export function Dashboard() {
             <div className="grid grid-cols-4 gap-4">
                 <KpiCard
                     label="Total Prospects"
-                    value={totalProspects}
-                    description="Active in pipeline"
+                    value={prospectsLoading ? 0 : totalProspects}
+                    description={prospectsLoading ? 'Loading…' : 'Active in pipeline'}
                     accent="blue"
                 />
                 <KpiCard
@@ -99,8 +131,59 @@ export function Dashboard() {
                 <PipelineFunnel counts={pipelineCounts} />
             </div>
 
-            {/* Unit Availability */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            {/* Recent Prospects */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                    <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
+                        Recent Prospects
+                    </h2>
+                    <button
+                        onClick={() => navigate('/prospects')}
+                        className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                        View all →
+                    </button>
+                </div>
+                {prospectsLoading ? (
+                    <div className="flex items-center gap-2 px-6 py-5">
+                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-gray-500">Loading…</span>
+                    </div>
+                ) : recentProspects.length === 0 ? (
+                    <div className="px-6 py-8 text-center text-sm text-gray-400">
+                        No prospects yet.{' '}
+                        <button onClick={() => navigate('/prospects')} className="text-blue-600 hover:underline">
+                            Add one
+                        </button>
+                    </div>
+                ) : (
+                    <div className="divide-y divide-gray-100">
+                        {recentProspects.map((p) => (
+                            <div
+                                key={p.id}
+                                onClick={() => navigate('/prospects')}
+                                className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                            >
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${avatarColor(p.id)}`}>
+                                    {initials(p.name)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate">{p.name}</p>
+                                    <p className="text-xs text-gray-400 truncate">{p.email}</p>
+                                </div>
+                                <div className="shrink-0">
+                                    <StatusBadge variant={p.status} />
+                                </div>
+                                <div className="text-xs text-gray-400 shrink-0 w-16 text-right">
+                                    {formatRelativeDate(p.createdAt)}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Unit Availability */}            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
                         Unit Availability

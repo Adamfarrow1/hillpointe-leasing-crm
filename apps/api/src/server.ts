@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { unitsRouter } from './routes/units.routes.js';
+import { prospectsRouter } from './routes/prospects.routes.js';
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/units', unitsRouter);
+app.use('/api/prospects', prospectsRouter);
 
 // Health check
 app.get('/health', (_req, res) => {
