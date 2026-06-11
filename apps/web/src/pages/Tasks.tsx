@@ -262,6 +262,7 @@ export function Tasks() {
     const [editingTask, setEditingTask] = useState<TaskWithProspect | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [filter, setFilter] = useState<Filter>('all');
+    const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
 
     function load() {
         setLoading(true);
@@ -329,6 +330,21 @@ export function Tasks() {
         [openTasks],
     );
 
+    // ── assignee options ──
+    const assigneeOptions = useMemo(() => {
+        const names = [...new Set(
+            tasks.map((t) => t.assignee).filter((a): a is string => a != null && a.trim() !== ''),
+        )].sort();
+        return names;
+    }, [tasks]);
+
+    // ── assignee filter helper ──
+    function applyAssignee(list: typeof tasks) {
+        if (assigneeFilter === 'all') return list;
+        if (assigneeFilter === 'unassigned') return list.filter((t) => !t.assignee);
+        return list.filter((t) => t.assignee === assigneeFilter);
+    }
+
     // ── filtered view ──
     const filterCounts: Record<Filter, number> = {
         all: tasks.length,
@@ -337,11 +353,11 @@ export function Tasks() {
         overdue: overdueTasks.length,
     };
 
-    const overdueFiltered = filter === 'done' ? [] : overdueTasks;
-    const todayFiltered = filter === 'done' || filter === 'overdue' ? [] : dueTodayTasks;
-    const soonFiltered = filter === 'done' || filter === 'overdue' ? [] : dueSoonTasks;
-    const otherFiltered = filter === 'done' || filter === 'overdue' ? [] : otherOpenTasks;
-    const doneFiltered = filter === 'open' || filter === 'overdue' ? [] : doneTasks;
+    const overdueFiltered = applyAssignee(filter === 'done' ? [] : overdueTasks);
+    const todayFiltered = applyAssignee(filter === 'done' || filter === 'overdue' ? [] : dueTodayTasks);
+    const soonFiltered = applyAssignee(filter === 'done' || filter === 'overdue' ? [] : dueSoonTasks);
+    const otherFiltered = applyAssignee(filter === 'done' || filter === 'overdue' ? [] : otherOpenTasks);
+    const doneFiltered = applyAssignee(filter === 'open' || filter === 'overdue' ? [] : doneTasks);
 
     // Shared section props to avoid repetition
     const sectionProps = {
@@ -378,17 +394,36 @@ export function Tasks() {
                 </div>
             )}
 
-            {/* Filter tabs */}
-            <div className="flex items-center gap-0.5 border-b border-gray-200">
-                {(['all', 'open', 'done', 'overdue'] as Filter[]).map((f) => (
-                    <FilterTab
-                        key={f}
-                        label={f.charAt(0).toUpperCase() + f.slice(1)}
-                        active={filter === f}
-                        onClick={() => setFilter(f)}
-                        count={filterCounts[f]}
-                    />
-                ))}
+            {/* Filter tabs + assignee dropdown */}
+            <div className="space-y-3">
+                <div className="flex items-center gap-0.5 border-b border-gray-200">
+                    {(['all', 'open', 'done', 'overdue'] as Filter[]).map((f) => (
+                        <FilterTab
+                            key={f}
+                            label={f.charAt(0).toUpperCase() + f.slice(1)}
+                            active={filter === f}
+                            onClick={() => setFilter(f)}
+                            count={filterCounts[f]}
+                        />
+                    ))}
+                </div>
+                {assigneeOptions.length > 0 && (
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="assignee-filter" className="text-sm text-gray-500">Assignee</label>
+                        <select
+                            id="assignee-filter"
+                            value={assigneeFilter}
+                            onChange={(e) => setAssigneeFilter(e.target.value)}
+                            className="py-1.5 pl-3 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700"
+                        >
+                            <option value="all">All Assignees</option>
+                            <option value="unassigned">Unassigned</option>
+                            {assigneeOptions.map((a) => (
+                                <option key={a} value={a}>{a}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
 
             {/* Content */}

@@ -2,11 +2,12 @@ import { z } from 'zod';
 
 export const ActivityEventTypeSchema = z.enum([
     'status_changed',
-    'task_created',
-    'task_completed',
-    'tour_scheduled',
-    'tour_completed',
     'unit_leased',
+    'tour_scheduled',
+    'tour_rescheduled',
+    'tour_completed',
+    'tour_no_show',
+    'tour_cancelled',
 ]);
 
 export const ActivityEventSchema = z.object({
@@ -22,7 +23,7 @@ export const ActivityEventSchema = z.object({
 /** Activity event as returned by GET /api/activity-events — includes optional nested relations */
 export const ActivityEventWithRelationsSchema = z.object({
     id: z.string(),
-    type: z.string(), // loose — DB can hold any string
+    type: ActivityEventTypeSchema,
     timestamp: z.string(),
     prospectId: z.string().nullable(),
     unitId: z.string().nullable(),

@@ -147,6 +147,7 @@ export function Prospects() {
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<ProspectStatus | 'all'>('all');
+    const [unitFilter, setUnitFilter] = useState<string>('all');
     const [selected, setSelected] = useState<Prospect | null>(null);
     const [editTarget, setEditTarget] = useState<Prospect | null>(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -168,10 +169,22 @@ export function Prospects() {
         return counts;
     }, [prospects]);
 
+    const unitOptions = useMemo(() => {
+        const nums = [...new Set(
+            prospects.map((p) => p.assignedUnit).filter((u): u is string => u != null && u.trim() !== ''),
+        )].sort();
+        return nums;
+    }, [prospects]);
+
     const filtered = useMemo(() => {
         let list = prospects;
         if (statusFilter !== 'all') {
             list = list.filter((p) => p.status === statusFilter);
+        }
+        if (unitFilter === 'unassigned') {
+            list = list.filter((p) => !p.assignedUnit);
+        } else if (unitFilter !== 'all') {
+            list = list.filter((p) => p.assignedUnit === unitFilter);
         }
         const q = search.trim().toLowerCase();
         if (q) {
@@ -183,7 +196,7 @@ export function Prospects() {
             );
         }
         return list;
-    }, [prospects, search, statusFilter]);
+    }, [prospects, search, statusFilter, unitFilter]);
 
     function handleRowClick(p: Prospect) {
         setSelected((prev) => (prev?.id === p.id ? null : p));
@@ -266,16 +279,30 @@ export function Prospects() {
                 ))}
             </div>
 
-            {/* Search */}
-            <div className="relative w-72">
-                <SearchIcon />
-                <input
-                    type="search"
-                    placeholder="Search name, email, phone…"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9 pr-4 py-2 w-full text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                />
+            {/* Search + unit filter */}
+            <div className="flex items-center gap-3 flex-wrap">
+                <div className="relative w-72">
+                    <SearchIcon />
+                    <input
+                        type="search"
+                        placeholder="Search name, email, phone…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 pr-4 py-2 w-full text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                </div>
+                <select
+                    value={unitFilter}
+                    onChange={(e) => setUnitFilter(e.target.value)}
+                    aria-label="Filter by assigned unit"
+                    className="py-2 pl-3 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700"
+                >
+                    <option value="all">All Units</option>
+                    <option value="unassigned">Unassigned</option>
+                    {unitOptions.map((u) => (
+                        <option key={u} value={u}>{u}</option>
+                    ))}
+                </select>
             </div>
 
             {/* Table / states */}
