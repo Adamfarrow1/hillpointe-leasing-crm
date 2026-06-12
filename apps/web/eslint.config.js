@@ -18,5 +18,12 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // Disabling set-state-in-effect: setting loading/error state before an
+      // async call inside useEffect is a standard React data-fetching pattern.
+      // This rule was introduced in eslint-plugin-react-hooks v5 and is overly
+      // strict for the patterns used throughout this codebase.
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

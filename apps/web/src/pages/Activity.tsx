@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { ActivityEventWithRelations } from '@crm/contracts';
 import { activityApi } from '../lib/activityApi';
-import { ActivityTimeline, formatEventType } from '../components/ActivityTimeline';
+import { ActivityTimeline } from '../components/ActivityTimeline';
+import { formatEventType } from '../lib/activityFormatters';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
