@@ -7,5 +7,7 @@
         "composite": true,
         "skipLibCheck": true
     },
-    "include": ["vitest.config.ts"]
+    "include": [
+        "vitest.config.ts"
+    ]
 }
