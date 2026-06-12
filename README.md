@@ -67,6 +67,7 @@ Run from the repo root unless noted.
 | `npm run dev --workspace=apps/api` | Start API with hot reload |
 | `npm run build -w web` | Production build (type-check + Vite) |
 | `npm run build --workspace=apps/api` | Compile API TypeScript |
+| `npm test --workspace=apps/api` | Run rule engine integration tests |
 | `npx prisma studio` (in `apps/api`) | Browse the SQLite database |
 | `npm run prisma:seed` (in `apps/api`) | Seed demo prospects and tasks |
 
@@ -148,7 +149,6 @@ Tour outcomes also trigger automation:
 
 ```
 Prospect --< Tour >-- Unit
-    �
     +--< Task
     +--< ActivityEvent
 ```
@@ -157,7 +157,7 @@ Prospect --< Tour >-- Unit
 
 ## Implementation Status
 
-**Highest tier fully reached: Tier 2**
+**Highest tier fully reached: Tier 4**
 
 | Tier | Feature | Status |
 |---|---|---|
@@ -172,12 +172,14 @@ Prospect --< Tour >-- Unit
 | Tier 2 | Dashboard with live data (KPIs, pipeline, tours, tasks, activity) | ✅ Complete |
 | Tier 2 | ProspectDrawer with inline activity timeline | ✅ Complete |
 | Tier 3 | Status filtering via API query param | ✅ Complete |
-| Tier 3 | Client-side search on Prospects page | ⚠️ Partial |
-| Tier 3 | Assignee / unit filter | 🔲 Planned |
+| Tier 3 | Client-side search on Prospects page | ✅ Complete |
+| Tier 3 | Assigned unit filter on Prospects page | ✅ Complete |
+| Tier 3 | Assignee filter on Tasks page | ✅ Complete |
 | Tier 4 | Form validation surfaced from shared Zod schemas | ✅ Complete |
 | Tier 4 | Loading, error, and empty states | ✅ Complete |
-| Tier 4 | Optimistic UI on status change | 🔲 Planned |
-| Tier 5 | Rule engine and API integration tests | 🔲 Planned |
+| Tier 4 | Dashboard error handling with retry | ✅ Complete |
+| Tier 4 | Optimistic UI on status change and task complete/reopen | ✅ Complete |
+| Tier 5 | Rule engine and tour automation integration tests (Vitest, 8 tests) | ✅ Complete |
 | Tier 5 | CI workflow | 🔲 Planned |
 
 ## Submission Status
@@ -195,6 +197,6 @@ Prospect --< Tour >-- Unit
 - **Database** — SQLite is used for take-home simplicity. A production version would use Postgres for stronger relational integrity and concurrent write support.
 - **Unit references** — `assignedUnit` is stored as a plain string on the `Prospect` model rather than a relational foreign key. A production schema would replace this with a proper `assignedUnitId` foreign key referencing `Unit`.
 - **Search and filtering** — Prospect search is currently client-side. A production version would implement server-side full-text search with pagination.
-- **Tests** — The rule engine is structured to be easily unit-tested (isolated files, injected `tx` context) but no automated tests were written. API integration tests would also be added.
-- **CI** — No GitHub Actions workflow exists yet. Would be added alongside tests.
+- **Tests** — Vitest integration tests cover all six automation rules and the completed tour outcome transaction (8 tests). A CI workflow to run them on push is the remaining gap.
+- **CI** — No GitHub Actions workflow exists yet. Would be added alongside server-side search.
 - **Dashboard analytics caching** — Dashboard KPI queries run on every load. A production version would add caching if query volume grew.
