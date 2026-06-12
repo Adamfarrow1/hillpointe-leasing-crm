@@ -53,29 +53,39 @@ export function Dashboard() {
     const [tasksLoading, setTasksLoading] = useState(true);
     const [activity, setActivity] = useState<ActivityEventWithRelations[]>([]);
     const [activityLoading, setActivityLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
-    useEffect(() => {
+    function loadAll() {
+        setLoadError(null);
+        setUnitsLoading(true);
+        setProspectsLoading(true);
+        setToursLoading(true);
+        setTasksLoading(true);
+        setActivityLoading(true);
+
         unitsApi.list()
             .then(setUnits)
-            .catch(() => { })
+            .catch(() => setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'))
             .finally(() => setUnitsLoading(false));
         prospectsApi.list()
             .then(setProspects)
-            .catch(() => { })
+            .catch(() => setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'))
             .finally(() => setProspectsLoading(false));
         toursApi.list()
             .then(setTours)
-            .catch(() => { })
+            .catch(() => setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'))
             .finally(() => setToursLoading(false));
         tasksApi.list()
             .then(setTasks)
-            .catch(() => { })
+            .catch(() => setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'))
             .finally(() => setTasksLoading(false));
         activityApi.list()
             .then((events) => setActivity(events.slice(0, 8)))
-            .catch(() => { })
+            .catch(() => setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'))
             .finally(() => setActivityLoading(false));
-    }, []);
+    }
+
+    useEffect(() => { loadAll(); }, []);
 
     const now = new Date().toISOString();
     const upcomingTours = tours
@@ -111,30 +121,43 @@ export function Dashboard() {
 
     return (
         <div className="space-y-6">
+            {/* Error banner */}
+            {loadError && (
+                <div className="flex items-center justify-between px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    <span>{loadError}</span>
+                    <button
+                        onClick={loadAll}
+                        className="ml-4 font-medium underline hover:no-underline shrink-0"
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+
             {/* KPI Row */}
             <div className="grid grid-cols-4 gap-4">
                 <KpiCard
                     label="Total Prospects"
                     value={prospectsLoading ? 0 : totalProspects}
-                    description={prospectsLoading ? 'Loading…' : 'Active in pipeline'}
+                    description={prospectsLoading ? 'Loading…' : loadError ? 'Unavailable' : 'Active in pipeline'}
                     accent="blue"
                 />
                 <KpiCard
                     label="Scheduled Tours"
                     value={toursLoading ? 0 : scheduledToursCount}
-                    description={toursLoading ? 'Loading…' : 'Upcoming'}
+                    description={toursLoading ? 'Loading…' : loadError ? 'Unavailable' : 'Upcoming'}
                     accent="purple"
                 />
                 <KpiCard
                     label="Open Tasks"
                     value={tasksLoading ? 0 : openTasksCount}
-                    description={tasksLoading ? 'Loading…' : 'Requiring attention'}
+                    description={tasksLoading ? 'Loading…' : loadError ? 'Unavailable' : 'Requiring attention'}
                     accent="amber"
                 />
                 <KpiCard
                     label="Available Units"
                     value={unitsLoading ? 0 : availableUnits}
-                    description={unitsLoading ? 'Loading…' : `of ${totalUnits} total`}
+                    description={unitsLoading ? 'Loading…' : loadError ? 'Unavailable' : `of ${totalUnits} total`}
                     accent="green"
                 />
             </div>

@@ -281,15 +281,26 @@ export function ProspectDrawer({ prospect, onClose, onEdit, onProspectChange }: 
                                     key={s.value}
                                     disabled={s.value === prospect.status || changingStatus}
                                     onClick={async () => {
+                                        // Capture previous state for rollback
+                                        const previousProspect = { ...prospect };
+                                        const newStatus = s.value;
+
+                                        // Optimistic update — reflect new status in UI immediately
+                                        onProspectChange({ ...prospect, status: newStatus });
+                                        setShowStatusPicker(false);
                                         setChangingStatus(true);
                                         setStatusError(null);
                                         setAutomationResult(null);
+
                                         try {
-                                            const result = await prospectsApi.changeStatus(prospect.id, s.value);
+                                            const result = await prospectsApi.changeStatus(prospect.id, newStatus);
+                                            // Replace with server-confirmed record
                                             onProspectChange(result.prospect);
                                             setAutomationResult(result);
-                                            setShowStatusPicker(false);
                                         } catch (err: unknown) {
+                                            // Roll back to previous state
+                                            onProspectChange(previousProspect);
+                                            setShowStatusPicker(true);
                                             setStatusError(err instanceof Error ? err.message : 'Status change failed');
                                         } finally {
                                             setChangingStatus(false);

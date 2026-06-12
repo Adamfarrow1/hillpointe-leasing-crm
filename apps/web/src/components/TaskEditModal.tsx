@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { TaskWithProspect, TaskPriority, TaskState } from '@crm/contracts';
+import { UpdateTaskSchema } from '@crm/contracts';
 import { tasksApi } from '../lib/tasksApi';
 
 interface TaskEditModalProps {
@@ -40,19 +41,25 @@ export function TaskEditModal({ task, onSaved, onClose }: TaskEditModalProps) {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (!title.trim()) { setError('Title is required'); return; }
         if (!dueDate) { setError('Due date is required'); return; }
+
+        const payload = {
+            title: title.trim(),
+            dueDate,
+            assignee: assignee.trim() || null,
+            priority,
+            state,
+        };
+        const parsed = UpdateTaskSchema.safeParse(payload);
+        if (!parsed.success) {
+            setError(parsed.error.issues[0]?.message ?? 'Invalid form data');
+            return;
+        }
 
         setSaving(true);
         setError(null);
         try {
-            const updated = await tasksApi.update(task.id, {
-                title: title.trim(),
-                dueDate,
-                assignee: assignee.trim() || null,
-                priority,
-                state,
-            });
+            const updated = await tasksApi.update(task.id, parsed.data);
             onSaved(updated);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Save failed');

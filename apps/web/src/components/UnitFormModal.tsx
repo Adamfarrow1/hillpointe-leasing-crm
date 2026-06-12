@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Unit, UnitStatus } from '@crm/contracts';
+import { CreateUnitSchema, UpdateUnitSchema } from '@crm/contracts';
 
 const STATUS_OPTIONS: { value: UnitStatus; label: string }[] = [
     { value: 'available', label: 'Available' },
@@ -39,11 +40,16 @@ export function UnitFormModal({ open, initial, existingNames, onSubmit, onClose,
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        setError(null);
         const trimmed = name.trim();
-        if (!trimmed) {
-            setError('Unit number is required.');
+
+        const schema = initial ? UpdateUnitSchema : CreateUnitSchema;
+        const parsed = schema.safeParse({ unitNumber: trimmed, status });
+        if (!parsed.success) {
+            setError(parsed.error.issues[0]?.message ?? 'Invalid input');
             return;
         }
+
         const duplicate = existingNames
             .filter((n) => !initial || n !== initial.unitNumber)
             .some((n) => n.toLowerCase() === trimmed.toLowerCase());

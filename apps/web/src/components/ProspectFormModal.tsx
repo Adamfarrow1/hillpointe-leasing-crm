@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Prospect, ProspectStatus } from '@crm/contracts';
+import { CreateProspectSchema, UpdateProspectSchema } from '@crm/contracts';
 import { prospectsApi } from '../lib/prospectsApi';
 import type { CreateProspectPayload, UpdateProspectPayload } from '../lib/prospectsApi';
 
@@ -43,44 +44,37 @@ export function ProspectFormModal({ prospect, onSaved, onClose }: ProspectFormMo
         }
     }, [prospect?.id]);
 
-    function validate() {
-        const next: typeof errors = {};
-        if (!name.trim()) next.name = 'Name is required';
-        if (!email.trim()) next.email = 'Email is required';
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = 'Invalid email address';
-        if (!phone.trim()) next.phone = 'Phone is required';
-        return next;
-    }
-
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        const validation = validate();
-        if (Object.keys(validation).length > 0) {
-            setErrors(validation);
+        setErrors({});
+
+        const raw = {
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
+            status,
+            assignedUnit: assignedUnit.trim() || null,
+        };
+
+        const schema = isEditing ? UpdateProspectSchema : CreateProspectSchema;
+        const parsed = schema.safeParse(raw);
+        if (!parsed.success) {
+            const fieldErrors: typeof errors = {};
+            for (const issue of parsed.error.issues) {
+                const field = issue.path[0] as keyof typeof fieldErrors;
+                if (field && !fieldErrors[field]) fieldErrors[field] = issue.message;
+            }
+            setErrors(fieldErrors);
             return;
         }
-        setErrors({});
+
         setSaving(true);
         try {
             let saved: Prospect;
             if (isEditing) {
-                const payload: UpdateProspectPayload = {
-                    name: name.trim(),
-                    email: email.trim(),
-                    phone: phone.trim(),
-                    status,
-                    assignedUnit: assignedUnit.trim() || null,
-                };
-                saved = await prospectsApi.update(prospect.id, payload);
+                saved = await prospectsApi.update(prospect.id, parsed.data as UpdateProspectPayload);
             } else {
-                const payload: CreateProspectPayload = {
-                    name: name.trim(),
-                    email: email.trim(),
-                    phone: phone.trim(),
-                    status,
-                    assignedUnit: assignedUnit.trim() || null,
-                };
-                saved = await prospectsApi.create(payload);
+                saved = await prospectsApi.create(parsed.data as CreateProspectPayload);
             }
             onSaved(saved);
         } catch (err: unknown) {
@@ -206,8 +200,8 @@ export function ProspectFormModal({ prospect, onSaved, onClose }: ProspectFormMo
 
 function inputClass(hasError: boolean) {
     return `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-1 transition-colors ${hasError
-            ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-            : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+        ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
+        : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
         }`;
 }
 

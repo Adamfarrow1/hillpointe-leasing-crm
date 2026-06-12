@@ -276,24 +276,30 @@ export function Tasks() {
     useEffect(load, []);
 
     async function handleComplete(id: string) {
+        // Optimistic update
+        setTasks((prev) => prev.map((t) => t.id === id ? { ...t, state: 'done' } : t));
         setCompleting((s) => new Set(s).add(id));
         try {
             const updated = await tasksApi.complete(id);
             setTasks((prev) => prev.map((t) => t.id === id ? updated : t));
         } catch {
-            // task stays as-is
+            // Roll back
+            setTasks((prev) => prev.map((t) => t.id === id ? { ...t, state: 'open' } : t));
         } finally {
             setCompleting((s) => { const next = new Set(s); next.delete(id); return next; });
         }
     }
 
     async function handleReopen(id: string) {
+        // Optimistic update
+        setTasks((prev) => prev.map((t) => t.id === id ? { ...t, state: 'open' } : t));
         setCompleting((s) => new Set(s).add(id));
         try {
             const updated = await tasksApi.reopen(id);
             setTasks((prev) => prev.map((t) => t.id === id ? updated : t));
         } catch {
-            // task stays as-is
+            // Roll back
+            setTasks((prev) => prev.map((t) => t.id === id ? { ...t, state: 'done' } : t));
         } finally {
             setCompleting((s) => { const next = new Set(s); next.delete(id); return next; });
         }
