@@ -16,8 +16,8 @@ A full-stack CRM for leasing agents managing apartment units, prospects, tours, 
 ```
 hillpointe-leasing-crm/
 +-- apps/
-�   +-- api/          # Express REST API (port 3001)
-�   +-- web/          # React + Vite frontend (port 5173)
+   +-- api/          # Express REST API (port 3001)
+   +-- web/          # React + Vite frontend (port 5173)
 +-- packages/
     +-- contracts/    # Shared Zod schemas and inferred types
 ```
