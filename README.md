@@ -28,7 +28,7 @@ hillpointe-leasing-crm/
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 22 LTS (v22.x.x recommended — v26.2.0 has known compatibility issues with native dependencies such as `lightningcss`)
 - npm 10+
 
 ### Install
