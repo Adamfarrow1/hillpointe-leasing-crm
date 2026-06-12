@@ -2,13 +2,13 @@
 
 ## Time Spent
 
-Roughly 30–40 hours across design, implementation, and review. I probably spent more time on the rule engine and transaction safety than the spec strictly required, but I wanted that core workflow to feel solid.
+Roughly 30–40 hours across design, implementation, and review.
 
 ## How Far I Got
 
-**Tier 4 complete, Tier 5 partial.**
+**Tier 5 complete.**
 
-I finished all of Tier 3 (status filtering, client-side search, assignee filter, unit filter) and all of Tier 4 (Zod form validation shared with the API, dashboard error handling with a retry button, optimistic UI for status changes and task toggles). For Tier 5 I got 8 integration tests written and passing — the thing I didn't get to was wiring up a CI workflow, which would be the next thing I'd do.
+I finished all of Tier 3 (status filtering, client-side search, assignee filter, unit filter) and all of Tier 4 (Zod form validation shared with the API, dashboard error handling with a retry button, optimistic UI for status changes and task toggles). For Tier 5 I wrote 8 integration tests covering all automation rules and wired up a GitHub Actions CI workflow that runs install, build, test, and lint on every push and pull request.
 
 ## What I Built
 
@@ -29,12 +29,11 @@ I finished all of Tier 3 (status filtering, client-side search, assignee filter,
 
 ## What I'd Build Next
 
-1. CI workflow (GitHub Actions running install → build → test on every push)
-2. Server-side search and pagination — client-side filtering is fine for demo data but won't scale
-3. Auth — even basic session-based auth before this touched a real environment
-4. Swap SQLite for Postgres for proper constraints and concurrent write safety
-5. Turn `assignedUnit` from a string into a real FK to `Unit`
-6. Deploy somewhere (Render, Railway, etc.)
+1. Server-side search and pagination — client-side filtering is fine for demo data but won't scale
+2. Auth — even basic session-based auth before this touched a real environment
+3. Swap SQLite for Postgres for proper constraints and concurrent write safety
+4. Turn `assignedUnit` from a string into a real FK to `Unit`
+5. Deploy somewhere (Render, Railway, etc.)
 
 ## Tradeoffs I Made
 
@@ -42,7 +41,6 @@ I finished all of Tier 3 (status filtering, client-side search, assignee filter,
 - **`assignedUnit` as a plain string** — I skipped the FK to avoid a mid-project migration. In a real codebase this would be `assignedUnitId Int? @relation(...)` from day one.
 - **Client-side filtering** — fine for seed data, not fine at scale. The API already accepts a `?status=` query param; extending that to handle search and pagination would be a small lift.
 - **No auth** — deliberately out of scope for the assessment, but it would be the first thing I added before any real usage.
-- **No CI** — the tests exist and pass locally; I just didn't get the Actions workflow written in time.
 
 ## AI Tool Disclosure
 
@@ -60,5 +58,4 @@ Everything generated was reviewed, run locally, and adjusted where needed.
 - No auth or Role Based Access Control
 - `assignedUnit` is a string, not a FK
 - Filtering and search are client-side only
-- No CI workflow yet
 - Not deployed anywhere

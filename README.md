@@ -1,5 +1,7 @@
 # Hillpointe Leasing CRM
 
+[![CI](https://github.com/Adamfarrow1/hillpointe-leasing-crm/actions/workflows/ci.yml/badge.svg)](https://github.com/Adamfarrow1/hillpointe-leasing-crm/actions/workflows/ci.yml)
+
 A full-stack CRM for leasing agents managing apartment units, prospects, tours, tasks, and activity events. Built as a TypeScript-strict monorepo with a shared contracts layer that drives both API validation and frontend type safety.
 
 ## Stack
@@ -157,7 +159,7 @@ Prospect --< Tour >-- Unit
 
 ## Implementation Status
 
-**Highest tier fully reached: Tier 4**
+**Highest tier fully reached: Tier 5**
 
 | Tier | Feature | Status |
 |---|---|---|
@@ -180,7 +182,7 @@ Prospect --< Tour >-- Unit
 | Tier 4 | Dashboard error handling with retry | ✅ Complete |
 | Tier 4 | Optimistic UI on status change and task complete/reopen | ✅ Complete |
 | Tier 5 | Rule engine and tour automation integration tests (Vitest, 8 tests) | ✅ Complete |
-| Tier 5 | CI workflow | 🔲 Planned |
+| Tier 5 | CI workflow | ✅ Complete |
 
 ## Submission Status
 
@@ -197,6 +199,18 @@ Prospect --< Tour >-- Unit
 - **Database** — SQLite is used for take-home simplicity. A production version would use Postgres for stronger relational integrity and concurrent write support.
 - **Unit references** — `assignedUnit` is stored as a plain string on the `Prospect` model rather than a relational foreign key. A production schema would replace this with a proper `assignedUnitId` foreign key referencing `Unit`.
 - **Search and filtering** — Prospect search is currently client-side. A production version would implement server-side full-text search with pagination.
-- **Tests** — Vitest integration tests cover all six automation rules and the completed tour outcome transaction (8 tests). A CI workflow to run them on push is the remaining gap.
+- **Tests** — Vitest integration tests cover all six automation rules and the completed tour outcome transaction (8 tests).
+
+## Continuous Integration
+
+The repository runs a GitHub Actions CI workflow on every push and pull request (all branches).
+
+The workflow:
+- **Builds the backend** — compiles the API TypeScript (`tsc`) after generating the Prisma client
+- **Builds the frontend** — runs `tsc -b && vite build` to type-check and bundle the React app
+- **Runs automation tests** — applies Prisma migrations to a fresh SQLite test database and executes all 8 Vitest integration tests
+- **Lints the frontend** — runs ESLint across the web workspace
+
+Status is shown by the badge at the top of this file.
 - **CI** — No GitHub Actions workflow exists yet. Would be added alongside server-side search.
 - **Dashboard analytics caching** — Dashboard KPI queries run on every load. A production version would add caching if query volume grew.
