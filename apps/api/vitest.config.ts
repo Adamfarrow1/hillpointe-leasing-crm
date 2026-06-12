@@ -5,7 +5,7 @@ export default defineConfig({
         globals: false,
         environment: 'node',
         // Run serially to avoid SQLite write contention across test files
-        singleFork: true,
+        fileParallelism: false,
         env: {
             DATABASE_URL: 'file:./prisma/test.db',
         },
