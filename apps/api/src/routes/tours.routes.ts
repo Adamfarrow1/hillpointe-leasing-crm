@@ -141,8 +141,31 @@ toursRouter.post('/', async (req, res) => {
             await tx.prospect.update({ where: { id: prospectId }, data: { status: 'tour_scheduled' } });
             ruleResult = await executeRule({ tx, prospect, newStatus: 'tour_scheduled' });
         } else {
+            // Prospect already at tour_scheduled — close any open reminder tasks, then create the confirmation task
+            await tx.task.updateMany({
+                where: {
+                    prospectId,
+                    state: 'open',
+                    title: { startsWith: 'Schedule a tour for' },
+                },
+                data: { state: 'done' },
+            });
+
+            const tourDate = new Date(scheduledAt);
+            const dueDate = new Date(tourDate);
+            dueDate.setDate(dueDate.getDate() - 1);
+            const dueDateStr = dueDate.toISOString().slice(0, 10);
+            await tx.task.create({
+                data: {
+                    title: `Confirm tour 24h prior — ${prospect.name}`,
+                    dueDate: dueDateStr,
+                    prospectId,
+                    state: 'open',
+                    priority: 'high',
+                },
+            });
             await tx.activityEvent.create({
-                data: { type: 'tour_scheduled', prospectId, summary: `Tour scheduled for ${prospect.name}` },
+                data: { type: 'tour_scheduled', prospectId, summary: `Tour scheduled for ${prospect.name}. Task created: "Confirm tour 24h prior — ${prospect.name}"` },
             });
         }
 

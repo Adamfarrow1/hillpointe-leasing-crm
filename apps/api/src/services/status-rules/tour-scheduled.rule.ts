@@ -7,7 +7,7 @@ export const tourScheduledRule: StatusRule = {
         const closedTasksCount = await closeOpenTasks(ctx);
         // Look for the most recently scheduled upcoming tour for this prospect
         const tour = await ctx.tx.tour.findFirst({
-            where: { prospectId: ctx.prospect.id },
+            where: { prospectId: ctx.prospect.id, outcome: null },
             orderBy: { scheduledAt: 'desc' },
         });
 
@@ -23,17 +23,22 @@ export const tourScheduledRule: StatusRule = {
                 'high',
             );
             createdTasks.push(task);
+        } else {
+            // No tour booked yet — create a reminder to schedule one
+            const task = await createTask(
+                ctx,
+                `Schedule a tour for ${ctx.prospect.name}`,
+                addDays(new Date(), 1),
+                'high',
+            );
+            createdTasks.push(task);
         }
-        // If no tour exists yet, we still record the activity but skip the task
-        // The task will be created when the tour is actually scheduled (Tier 2)
 
-        const taskNote = createdTasks.length > 0
-            ? ` Task created: "${createdTasks[0].title}"`
-            : ' No tour scheduled yet — confirmation task will be created when tour is booked.';
+        const taskNote = ` Task created: "${createdTasks[0].title}"`;
 
         const activity = await createActivity(
             ctx,
-            `${ctx.prospect.name} tour scheduled.${taskNote}`,
+            `${ctx.prospect.name} moved to tour scheduled.${taskNote}`,
         );
         return { createdTasks, closedTasksCount, activityEvents: [activity] };
     },
