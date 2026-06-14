@@ -136,10 +136,10 @@ Status transitions via `PATCH /api/prospects/:id/status` run a transactional rul
 
 | Status transition | Effect | Activity logged |
 |---|---|---|
-| → `contacted` | Creates task: "Send tour availability to {name}" (due +2 days) | ✅ |
-| → `tour_scheduled` | Creates task: "Confirm tour 24h prior" (due: tour date − 1 day) | ✅ |
-| → `toured` | Creates task: "Send application link to {name}" (due +1 day) | ✅ |
-| → `application` | Creates task: "Review application — {name}" (due +3 days) | ✅ |
+| → `contacted` | Closes any open tasks from prior stages; creates task: "Send tour availability to {name}" (due +2 days) | ✅ |
+| → `tour_scheduled` | Closes any open tasks; if an upcoming tour exists creates "Confirm tour 24h prior" (due: tour date − 1 day); otherwise creates "Schedule a tour for {name}" (due +1 day) | ✅ |
+| → `toured` | Closes any open tasks; creates task: "Send application link to {name}" (due +1 day) | ✅ |
+| → `application` | Closes any open tasks; creates task: "Review application — {name}" (due +3 days) | ✅ |
 | → `leased` | Marks assigned unit as leased; auto-closes all open tasks for the prospect | ✅ |
 | → `lost` | Auto-closes all open tasks for the prospect | ✅ |
 
@@ -197,7 +197,6 @@ Prospect --< Tour >-- Unit
 
 - **Authentication** — No auth or RBAC implemented. A production version would add JWT-based authentication and role-based permissions (leasing agent vs. manager).
 - **Database** — SQLite is used for take-home simplicity. A production version would use Postgres for stronger relational integrity and concurrent write support.
-- **Unit references** — `assignedUnit` is stored as a plain string on the `Prospect` model rather than a relational foreign key. A production schema would replace this with a proper `assignedUnitId` foreign key referencing `Unit`.
 - **Search and filtering** — Prospect search is currently client-side. A production version would implement server-side full-text search with pagination.
 - **Tests** — Vitest integration tests cover all six automation rules and the completed tour outcome transaction (8 tests).
 

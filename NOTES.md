@@ -32,13 +32,11 @@ I finished all of Tier 3 (status filtering, client-side search, assignee filter,
 1. Server-side search and pagination — client-side filtering is fine for demo data but won't scale
 2. Auth — even basic session-based auth before this touched a real environment
 3. Swap SQLite for Postgres for proper constraints and concurrent write safety
-4. Turn `assignedUnit` from a string into a real FK to `Unit`
-5. Deploy somewhere (Render, Railway, etc.)
+4. Deploy somewhere (Render, Railway, etc.)
 
 ## Tradeoffs I Made
 
 - **SQLite instead of Postgres** — no external service needed to run the take-home locally, but I wouldn't ship this to production on SQLite. The Prisma schema is straightforward to migrate.
-- **`assignedUnit` as a plain string** — I skipped the FK to avoid a mid-project migration. In a real codebase this would be `assignedUnitId Int? @relation(...)` from day one.
 - **Client-side filtering** — fine for seed data, not fine at scale. The API already accepts a `?status=` query param; extending that to handle search and pagination would be a small lift.
 - **No auth** — deliberately out of scope for the assessment, but it would be the first thing I added before any real usage.
 
@@ -56,6 +54,5 @@ Everything generated was reviewed, run locally, and adjusted where needed.
 
 - SQLite — not production-ready for concurrent writes or strict referential integrity
 - No auth or Role Based Access Control
-- `assignedUnit` is a string, not a FK
 - Filtering and search are client-side only
 - Not deployed anywhere
