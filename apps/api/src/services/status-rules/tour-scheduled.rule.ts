@@ -1,9 +1,10 @@
 import type { StatusRule } from './types.js';
-import { addDays, createTask, createActivity } from './rule-engine.js';
+import { addDays, createTask, createActivity, closeOpenTasks } from './rule-engine.js';
 
 export const tourScheduledRule: StatusRule = {
     status: 'tour_scheduled',
     async execute(ctx) {
+        const closedTasksCount = await closeOpenTasks(ctx);
         // Look for the most recently scheduled upcoming tour for this prospect
         const tour = await ctx.tx.tour.findFirst({
             where: { prospectId: ctx.prospect.id },
@@ -34,6 +35,6 @@ export const tourScheduledRule: StatusRule = {
             ctx,
             `${ctx.prospect.name} tour scheduled.${taskNote}`,
         );
-        return { createdTasks, closedTasksCount: 0, activityEvents: [activity] };
+        return { createdTasks, closedTasksCount, activityEvents: [activity] };
     },
 };
