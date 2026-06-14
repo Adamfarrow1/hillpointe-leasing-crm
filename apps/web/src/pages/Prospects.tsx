@@ -132,7 +132,7 @@ function ProspectRow({
                 <StatusBadge variant={prospect.status} />
             </td>
             <td className="px-4 py-3 text-sm text-gray-600">
-                {prospect.assignedUnit ?? <span className="text-gray-400">—</span>}
+                {prospect.assignedUnit?.unitNumber ?? <span className="text-gray-400">—</span>}
             </td>
             <td className="px-4 py-3 text-sm text-gray-500">
                 {formatDate(prospect.createdAt)}
@@ -171,7 +171,7 @@ export function Prospects() {
 
     const unitOptions = useMemo(() => {
         const nums = [...new Set(
-            prospects.map((p) => p.assignedUnit).filter((u): u is string => u != null && u.trim() !== ''),
+            prospects.map((p) => p.assignedUnit?.unitNumber).filter((u): u is string => u != null && u.trim() !== ''),
         )].sort();
         return nums;
     }, [prospects]);
@@ -182,9 +182,9 @@ export function Prospects() {
             list = list.filter((p) => p.status === statusFilter);
         }
         if (unitFilter === 'unassigned') {
-            list = list.filter((p) => !p.assignedUnit);
+            list = list.filter((p) => !p.assignedUnitId);
         } else if (unitFilter !== 'all') {
-            list = list.filter((p) => p.assignedUnit === unitFilter);
+            list = list.filter((p) => p.assignedUnit?.unitNumber === unitFilter);
         }
         const q = search.trim().toLowerCase();
         if (q) {

@@ -200,7 +200,7 @@ export function ProspectDrawer({ prospect, onClose, onEdit, onProspectChange }: 
                         <div className="flex items-center gap-2.5 text-sm text-gray-700">
                             <BuildingIcon />
                             {prospect.assignedUnit
-                                ? <span>{prospect.assignedUnit}</span>
+                                ? <span>{prospect.assignedUnit.unitNumber}</span>
                                 : <span className="text-gray-400">No unit assigned</span>
                             }
                         </div>

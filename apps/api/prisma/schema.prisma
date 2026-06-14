@@ -8,25 +8,29 @@ datasource db {
 }
 
 model Unit {
-  id         String   @id @default(cuid())
-  unitNumber String   @unique
-  status     String   @default("available")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id         String          @id @default(cuid())
+  unitNumber String          @unique
+  status     String          @default("available")
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  prospects  Prospect[]
+  tours      Tour[]
+  activity   ActivityEvent[]
 }
 
 model Prospect {
-  id           String          @id @default(cuid())
-  name         String
-  email        String          @unique
-  phone        String
-  status       String          @default("new")
-  assignedUnit String?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  tasks        Task[]
-  activity     ActivityEvent[]
-  tours        Tour[]
+  id             String          @id @default(cuid())
+  name           String
+  email          String          @unique
+  phone          String
+  status         String          @default("new")
+  assignedUnitId String?
+  assignedUnit   Unit?           @relation(fields: [assignedUnitId], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  tasks          Task[]
+  activity       ActivityEvent[]
+  tours          Tour[]
 }
 
 model Task {
@@ -43,14 +47,15 @@ model Task {
 }
 
 model ActivityEvent {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   type       String
-  timestamp  DateTime @default(now())
+  timestamp  DateTime  @default(now())
   prospectId String?
   prospect   Prospect? @relation(fields: [prospectId], references: [id], onDelete: SetNull)
   unitId     String?
+  unit       Unit?     @relation(fields: [unitId], references: [id])
   summary    String
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 }
 
 model Tour {
@@ -58,6 +63,7 @@ model Tour {
   prospectId  String
   prospect    Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
   unitId      String?
+  unit        Unit?    @relation(fields: [unitId], references: [id])
   scheduledAt DateTime
   outcome     String?
   agentName   String?

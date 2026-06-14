@@ -20,6 +20,13 @@ async function main() {
         });
     }
 
+    // Fetch unit IDs by unit number for use in prospect seeds
+    const unitRows = await prisma.unit.findMany({
+        where: { unitNumber: { in: unitSeeds.map((u) => u.unitNumber) } },
+        select: { id: true, unitNumber: true },
+    });
+    const unitIdByNumber = new Map(unitRows.map((u) => [u.unitNumber, u.id]));
+
     // Prospects — demonstrate the full pipeline
     const prospectSeeds = [
         {
@@ -27,35 +34,35 @@ async function main() {
             name: 'Sarah Johnson',
             phone: '(555) 100-0001',
             status: 'new',
-            assignedUnit: null,
+            assignedUnitId: null,
         },
         {
             email: 'marcus.williams@example.com',
             name: 'Marcus Williams',
             phone: '(555) 100-0002',
             status: 'contacted',
-            assignedUnit: null,
+            assignedUnitId: null,
         },
         {
             email: 'emily.chen@example.com',
             name: 'Emily Chen',
             phone: '(555) 100-0003',
             status: 'tour_scheduled',
-            assignedUnit: '101', // has unit — can demo new → contacted → toured → application → leased
+            assignedUnitId: unitIdByNumber.get('101') ?? null, // has unit — can demo new → contacted → toured → application → leased
         },
         {
             email: 'david.rodriguez@example.com',
             name: 'David Rodriguez',
             phone: '(555) 100-0004',
             status: 'toured',
-            assignedUnit: '102',
+            assignedUnitId: unitIdByNumber.get('102') ?? null,
         },
         {
             email: 'jessica.park@example.com',
             name: 'Jessica Park',
             phone: '(555) 100-0005',
             status: 'application',
-            assignedUnit: '201', // can demo application → leased
+            assignedUnitId: unitIdByNumber.get('201') ?? null, // can demo application → leased
         },
     ];
 

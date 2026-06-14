@@ -20,7 +20,7 @@ async function createProspect(overrides: Partial<{
     email: string;
     phone: string;
     status: string;
-    assignedUnit: string | null;
+    assignedUnitId: string | null;
 }> = {}) {
     return prisma.prospect.create({
         data: {
@@ -28,7 +28,7 @@ async function createProspect(overrides: Partial<{
             email: overrides.email ?? `test-${Date.now()}@example.com`,
             phone: overrides.phone ?? '555-0000',
             status: overrides.status ?? 'new',
-            assignedUnit: overrides.assignedUnit ?? null,
+            assignedUnitId: overrides.assignedUnitId ?? null,
         },
     });
 }
@@ -127,7 +127,7 @@ describe('leased rule', () => {
 
         const prospect = await createProspect({
             status: 'application',
-            assignedUnit: unit.unitNumber,
+            assignedUnitId: unit.id,
         });
         prospectId = prospect.id;
 
@@ -174,7 +174,7 @@ describe('leased rule', () => {
         // Need a dummy unit id for cleanup guard — use a placeholder
         unitId = 'none';
 
-        const prospect = await createProspect({ status: 'application', assignedUnit: null });
+        const prospect = await createProspect({ status: 'application', assignedUnitId: null });
         prospectId = prospect.id;
 
         await prisma.task.create({

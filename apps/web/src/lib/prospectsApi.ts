@@ -8,7 +8,7 @@ export interface CreateProspectPayload {
     email: string;
     phone: string;
     status?: ProspectStatus;
-    assignedUnit?: string | null;
+    assignedUnitId?: string | null;
 }
 
 export interface UpdateProspectPayload {
@@ -16,7 +16,7 @@ export interface UpdateProspectPayload {
     email?: string;
     phone?: string;
     status?: ProspectStatus;
-    assignedUnit?: string | null;
+    assignedUnitId?: string | null;
 }
 
 export interface StatusTransitionResult {

@@ -10,13 +10,20 @@ export const ProspectStatusSchema = z.enum([
     'lost',
 ]);
 
+const AssignedUnitSchema = z.object({
+    id: z.string(),
+    unitNumber: z.string(),
+    status: z.string(),
+});
+
 export const ProspectSchema = z.object({
     id: z.string(),
     name: z.string(),
     email: z.string().email(),
     phone: z.string(),
     status: ProspectStatusSchema,
-    assignedUnit: z.string().nullable(),
+    assignedUnitId: z.string().nullable(),
+    assignedUnit: AssignedUnitSchema.nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
 });
@@ -26,7 +33,7 @@ export const CreateProspectSchema = z.object({
     email: z.string().email('Invalid email'),
     phone: z.string().min(1, 'Phone is required'),
     status: ProspectStatusSchema.default('new'),
-    assignedUnit: z.string().nullable().default(null),
+    assignedUnitId: z.string().nullable().default(null),
 });
 
 export const UpdateProspectSchema = z.object({
@@ -34,7 +41,7 @@ export const UpdateProspectSchema = z.object({
     email: z.string().email().optional(),
     phone: z.string().min(1).optional(),
     status: ProspectStatusSchema.optional(),
-    assignedUnit: z.string().nullable().optional(),
+    assignedUnitId: z.string().nullable().optional(),
 });
 
 export const StatusTransitionSchema = z.object({

@@ -15,6 +15,7 @@ prospectsRouter.get('/', async (req, res) => {
 
     const prospects = await prisma.prospect.findMany({
         where,
+        include: { assignedUnit: true },
         orderBy: { createdAt: 'desc' },
     });
     res.json(prospects);
@@ -24,6 +25,7 @@ prospectsRouter.get('/', async (req, res) => {
 prospectsRouter.get('/:id', async (req, res) => {
     const prospect = await prisma.prospect.findUnique({
         where: { id: req.params.id },
+        include: { assignedUnit: true },
     });
     if (!prospect) {
         res.status(404).json({ error: 'Prospect not found' });
@@ -41,7 +43,7 @@ prospectsRouter.post('/', async (req, res) => {
     }
 
     try {
-        const prospect = await prisma.prospect.create({ data: result.data });
+        const prospect = await prisma.prospect.create({ data: result.data, include: { assignedUnit: true } });
         res.status(201).json(prospect);
     } catch (err: unknown) {
         if (isPrismaUniqueConstraintError(err)) {
@@ -64,6 +66,7 @@ prospectsRouter.patch('/:id', async (req, res) => {
         const prospect = await prisma.prospect.update({
             where: { id: req.params.id },
             data: result.data,
+            include: { assignedUnit: true },
         });
         res.json(prospect);
     } catch (err: unknown) {
@@ -99,6 +102,7 @@ prospectsRouter.patch('/:id/status', async (req, res) => {
             const updated = await tx.prospect.update({
                 where: { id: req.params.id },
                 data: { status: newStatus },
+                include: { assignedUnit: true },
             });
 
             const ruleResult = await executeRule({ tx, prospect: current, newStatus });

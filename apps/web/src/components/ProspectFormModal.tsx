@@ -3,6 +3,8 @@ import type { Prospect, ProspectStatus } from '@crm/contracts';
 import { CreateProspectSchema, UpdateProspectSchema } from '@crm/contracts';
 import { prospectsApi } from '../lib/prospectsApi';
 import type { CreateProspectPayload, UpdateProspectPayload } from '../lib/prospectsApi';
+import { unitsApi } from '../lib/unitsApi';
+import type { Unit } from '@crm/contracts';
 
 const STATUS_OPTIONS: { value: ProspectStatus; label: string }[] = [
     { value: 'new', label: 'New' },
@@ -28,10 +30,15 @@ export function ProspectFormModal({ prospect, onSaved, onClose }: ProspectFormMo
     const [email, setEmail] = useState(prospect?.email ?? '');
     const [phone, setPhone] = useState(prospect?.phone ?? '');
     const [status, setStatus] = useState<ProspectStatus>(prospect?.status ?? 'new');
-    const [assignedUnit, setAssignedUnit] = useState(prospect?.assignedUnit ?? '');
+    const [assignedUnitId, setAssignedUnitId] = useState(prospect?.assignedUnitId ?? '');
+    const [units, setUnits] = useState<Unit[]>([]);
 
     const [saving, setSaving] = useState(false);
-    const [errors, setErrors] = useState<Partial<Record<'name' | 'email' | 'phone' | 'server', string>>>({});
+    const [errors, setErrors] = useState<Partial<Record<'name' | 'email' | 'phone' | 'server', string>>>({})
+
+    useEffect(() => {
+        unitsApi.list().then(setUnits).catch(() => null);
+    }, []);
 
     // Keep form in sync if the prospect prop changes (e.g. after a status update externally)
     useEffect(() => {
@@ -40,7 +47,7 @@ export function ProspectFormModal({ prospect, onSaved, onClose }: ProspectFormMo
             setEmail(prospect.email);
             setPhone(prospect.phone);
             setStatus(prospect.status);
-            setAssignedUnit(prospect.assignedUnit ?? '');
+            setAssignedUnitId(prospect.assignedUnitId ?? '');
         }
     }, [prospect?.id]);
 
@@ -53,7 +60,7 @@ export function ProspectFormModal({ prospect, onSaved, onClose }: ProspectFormMo
             email: email.trim(),
             phone: phone.trim(),
             status,
-            assignedUnit: assignedUnit.trim() || null,
+            assignedUnitId: assignedUnitId || null,
         };
 
         const schema = isEditing ? UpdateProspectSchema : CreateProspectSchema;
@@ -161,13 +168,16 @@ export function ProspectFormModal({ prospect, onSaved, onClose }: ProspectFormMo
                             </Field>
 
                             <Field label="Assigned Unit">
-                                <input
-                                    type="text"
-                                    value={assignedUnit}
-                                    onChange={(e) => setAssignedUnit(e.target.value)}
-                                    placeholder="Unit 101"
+                                <select
+                                    value={assignedUnitId}
+                                    onChange={(e) => setAssignedUnitId(e.target.value)}
                                     className={inputClass(false)}
-                                />
+                                >
+                                    <option value="">None</option>
+                                    {units.map((u) => (
+                                        <option key={u.id} value={u.id}>{u.unitNumber}</option>
+                                    ))}
+                                </select>
                             </Field>
                         </div>
                     </div>

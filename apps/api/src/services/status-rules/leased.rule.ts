@@ -4,19 +4,21 @@ import { closeOpenTasks, createActivity } from './rule-engine.js';
 export const leasedRule: StatusRule = {
     status: 'leased',
     async execute(ctx) {
-        // Mark assigned unit as leased if prospect has one
-        if (ctx.prospect.assignedUnit) {
-            await ctx.tx.unit.updateMany({
-                where: { unitNumber: ctx.prospect.assignedUnit },
+        let unitDisplay = '';
+        if (ctx.prospect.assignedUnitId) {
+            const unit = await ctx.tx.unit.update({
+                where: { id: ctx.prospect.assignedUnitId },
                 data: { status: 'leased' },
+                select: { unitNumber: true },
             });
+            unitDisplay = unit.unitNumber;
         }
 
         // Auto-close all open tasks for this prospect
         const closedTasksCount = await closeOpenTasks(ctx);
 
-        const unitNote = ctx.prospect.assignedUnit
-            ? ` Unit ${ctx.prospect.assignedUnit} marked as leased.`
+        const unitNote = ctx.prospect.assignedUnitId
+            ? ` Unit ${unitDisplay} marked as leased.`
             : '';
         const tasksNote = closedTasksCount > 0
             ? ` ${closedTasksCount} open task(s) auto-closed.`
