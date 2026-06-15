@@ -80,7 +80,7 @@ export function Sidebar() {
                         to={item.path}
                         end={item.path === '/'}
                         className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:translate-x-0.5 ${isActive
                                 ? 'bg-blue-50 text-blue-700'
                                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                             }`

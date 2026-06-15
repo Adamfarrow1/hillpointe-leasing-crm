@@ -135,7 +135,7 @@ export function Dashboard() {
             )}
 
             {/* KPI Row */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-4 stagger">
                 <KpiCard
                     label="Total Prospects"
                     value={prospectsLoading ? 0 : totalProspects}
@@ -165,7 +165,7 @@ export function Dashboard() {
             {/* Tours + Tasks (above pipeline) */}
             <div className="grid grid-cols-2 gap-4">
                 {/* Upcoming Tours */}
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="card-hover bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                         <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
                             Upcoming Tours
@@ -209,7 +209,7 @@ export function Dashboard() {
                 </div>
 
                 {/* Open Tasks */}
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="card-hover bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                         <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
                             Open Tasks
@@ -250,7 +250,7 @@ export function Dashboard() {
             </div>
 
             {/* Pipeline Overview */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="card-hover bg-white rounded-lg border border-gray-200 shadow-sm p-6">
                 <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-5">
                     Prospect Pipeline
                 </h2>
@@ -260,7 +260,7 @@ export function Dashboard() {
             {/* Recent Prospects + Recent Activity */}
             <div className="grid grid-cols-2 gap-4">
                 {/* Recent Prospects */}
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="card-hover bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                         <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
                             Recent Prospects
@@ -312,7 +312,7 @@ export function Dashboard() {
                 </div>
 
                 {/* Recent Activity */}
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="card-hover bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                         <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
                             Recent Activity
@@ -342,7 +342,7 @@ export function Dashboard() {
             </div>
 
             {/* Unit Availability */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="card-hover bg-white rounded-lg border border-gray-200 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
                         Unit Availability
@@ -375,8 +375,8 @@ export function Dashboard() {
                                     </div>
                                     <div className="w-full bg-gray-100 rounded-full h-1.5">
                                         <div
-                                            className={`${bar} h-1.5 rounded-full transition-all`}
-                                            style={{ width: `${pct}%` }}
+                                            className={`${bar} h-1.5 rounded-full animate-bar`}
+                                            style={{ ['--bar-width' as string]: `${pct}%` }}
                                         />
                                     </div>
                                     <p className="text-xs text-gray-400">{pct}% of inventory</p>

@@ -139,13 +139,13 @@ export function ProspectDrawer({ prospect, onClose, onEdit, onProspectChange }: 
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/20 z-30"
+                className="fixed inset-0 bg-black/20 z-30 animate-fade-in"
                 onClick={onClose}
                 aria-hidden="true"
             />
 
             {/* Drawer panel */}
-            <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-40 flex flex-col overflow-hidden">
+            <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-40 flex flex-col overflow-hidden animate-slide-in-right">
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
                     <h2 className="text-base font-semibold text-gray-900">Prospect Details</h2>

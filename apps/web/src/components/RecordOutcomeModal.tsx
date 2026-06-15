@@ -59,10 +59,10 @@ export function RecordOutcomeModal({ tour, onRecorded, onClose }: RecordOutcomeM
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-fade-in"
             onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 animate-scale-in">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                     <h2 className="text-base font-semibold text-gray-900">Record Tour Outcome</h2>
