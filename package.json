@@ -6,9 +6,15 @@
         "apps/*",
         "packages/*"
     ],
+    "scripts": {
+        "dev": "npm run dev --workspace web",
+        "build": "npm run build --workspace web",
+        "preview": "npm run preview --workspace web",
+        "lint": "npm run lint --workspace web"
+    },
     "dependencies": {
-        "@crm/contracts": "^0.0.0",
-        "react": "^19.2.7",
-        "react-router-dom": "^7.17.0"
+        "@tailwindcss/vite": "^4.3.1",
+        "@vitejs/plugin-react": "^6.0.2",
+        "vite": "^8.0.16"
     }
 }

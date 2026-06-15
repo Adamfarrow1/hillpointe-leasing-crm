@@ -75,7 +75,7 @@ export function PipelineFunnel({ counts, onStageClick }: PipelineFunnelProps) {
     return (
         <div className="space-y-3">
             {/* Main pipeline flow */}
-            <div className="flex items-stretch gap-1.5 stagger">
+            <div className="flex items-stretch gap-1.5">
                 {MAIN_FLOW.map((stage, idx) => (
                     <Fragment key={stage.status}>
                         <StageCard

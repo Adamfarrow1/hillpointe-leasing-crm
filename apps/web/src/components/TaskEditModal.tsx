@@ -70,10 +70,10 @@ export function TaskEditModal({ task, onSaved, onClose }: TaskEditModalProps) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
             onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 animate-scale-in">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                     <h2 className="text-base font-semibold text-gray-900">Edit Task</h2>
