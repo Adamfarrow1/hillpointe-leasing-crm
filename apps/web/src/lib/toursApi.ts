@@ -20,7 +20,7 @@ export interface OutcomeResponse {
 }
 
 export const toursApi = {
-    list: () => request<TourWithRelations[]>(BASE),
+    list: (signal?: AbortSignal) => request<TourWithRelations[]>(BASE, { signal }),
 
     create: (payload: CreateTourInput) =>
         request<CreateTourResponse>(BASE, {

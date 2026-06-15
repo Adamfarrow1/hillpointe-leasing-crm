@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useCountUp } from '../lib/useCountUp';
 import { useNavigate } from 'react-router-dom';
 import { KpiCard } from '../components/KpiCard';
 import { StatusBadge } from '../components/StatusBadge';
@@ -54,8 +55,15 @@ export function Dashboard() {
     const [activity, setActivity] = useState<ActivityEventWithRelations[]>([]);
     const [activityLoading, setActivityLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
+    const abortRef = useRef<AbortController | null>(null);
 
     function loadAll() {
+        // Cancel any in-flight requests from a previous call
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+        const { signal } = controller;
+
         setLoadError(null);
         setUnitsLoading(true);
         setProspectsLoading(true);
@@ -63,29 +71,34 @@ export function Dashboard() {
         setTasksLoading(true);
         setActivityLoading(true);
 
-        unitsApi.list()
+        const ignore = (err: unknown) => (err instanceof DOMException && err.name === 'AbortError');
+
+        unitsApi.list(signal)
             .then(setUnits)
-            .catch(() => setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'))
-            .finally(() => setUnitsLoading(false));
-        prospectsApi.list()
+            .catch((err) => { if (!ignore(err)) setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'); })
+            .finally(() => { if (!signal.aborted) setUnitsLoading(false); });
+        prospectsApi.list(undefined, signal)
             .then(setProspects)
-            .catch(() => setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'))
-            .finally(() => setProspectsLoading(false));
-        toursApi.list()
+            .catch((err) => { if (!ignore(err)) setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'); })
+            .finally(() => { if (!signal.aborted) setProspectsLoading(false); });
+        toursApi.list(signal)
             .then(setTours)
-            .catch(() => setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'))
-            .finally(() => setToursLoading(false));
-        tasksApi.list()
+            .catch((err) => { if (!ignore(err)) setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'); })
+            .finally(() => { if (!signal.aborted) setToursLoading(false); });
+        tasksApi.list(signal)
             .then(setTasks)
-            .catch(() => setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'))
-            .finally(() => setTasksLoading(false));
-        activityApi.list()
+            .catch((err) => { if (!ignore(err)) setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'); })
+            .finally(() => { if (!signal.aborted) setTasksLoading(false); });
+        activityApi.list(undefined, signal)
             .then((events) => setActivity(events.slice(0, 8)))
-            .catch(() => setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'))
-            .finally(() => setActivityLoading(false));
+            .catch((err) => { if (!ignore(err)) setLoadError('Unable to load dashboard data. Please check that the API server is running and try again.'); })
+            .finally(() => { if (!signal.aborted) setActivityLoading(false); });
     }
 
-    useEffect(() => { loadAll(); }, []);
+    useEffect(() => {
+        loadAll();
+        return () => { abortRef.current?.abort(); };
+    }, []);
 
     const now = new Date().toISOString();
     const upcomingTours = tours
@@ -105,6 +118,11 @@ export function Dashboard() {
     const leasedUnits = units.filter((u) => u.status === 'leased').length;
     const totalUnits = units.length;
 
+    const animatedAvailable = useCountUp(availableUnits);
+    const animatedHeld = useCountUp(heldUnits);
+    const animatedLeased = useCountUp(leasedUnits);
+    const animatedTotal = useCountUp(totalUnits);
+
     const prospectsByStatus = prospects.reduce<Partial<Record<ProspectStatus, number>>>(
         (acc, p) => { acc[p.status] = (acc[p.status] ?? 0) + 1; return acc; },
         {}
@@ -121,6 +139,21 @@ export function Dashboard() {
 
     return (
         <div className="space-y-6">
+            <style>{`
+                @keyframes fadeUp {
+                    from { opacity: 0; transform: translateY(15px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-up {
+                    opacity: 0;
+                    animation: fadeUp 0.5s ease-out forwards;
+                }
+                .delay-100 { animation-delay: 100ms; }
+                .delay-200 { animation-delay: 200ms; }
+                .delay-300 { animation-delay: 300ms; }
+                .delay-400 { animation-delay: 400ms; }
+            `}</style>
+
             {/* Error banner */}
             {loadError && (
                 <div className="flex items-center justify-between px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
@@ -135,7 +168,7 @@ export function Dashboard() {
             )}
 
             {/* KPI Row */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-4 animate-fade-up">
                 <KpiCard
                     label="Total Prospects"
                     value={prospectsLoading ? 0 : totalProspects}
@@ -163,7 +196,7 @@ export function Dashboard() {
             </div>
 
             {/* Tours + Tasks (above pipeline) */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 animate-fade-up delay-100">
                 {/* Upcoming Tours */}
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -178,9 +211,17 @@ export function Dashboard() {
                         </button>
                     </div>
                     {toursLoading ? (
-                        <div className="flex items-center gap-2 px-6 py-5">
-                            <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                            <span className="text-sm text-gray-500">Loading…</span>
+                        <div className="divide-y divide-gray-100 animate-pulse">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="flex items-center gap-3 px-6 py-3">
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 shrink-0" />
+                                    <div className="flex-1 space-y-1.5">
+                                        <div className="h-3 bg-gray-200 rounded w-2/5" />
+                                        <div className="h-2.5 bg-gray-100 rounded w-3/5" />
+                                    </div>
+                                    <div className="h-2.5 bg-gray-100 rounded w-12 shrink-0" />
+                                </div>
+                            ))}
                         </div>
                     ) : upcomingTours.length === 0 ? (
                         <div className="px-6 py-8 text-center text-sm text-gray-400">
@@ -222,9 +263,17 @@ export function Dashboard() {
                         </button>
                     </div>
                     {tasksLoading ? (
-                        <div className="flex items-center gap-2 px-6 py-5">
-                            <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                            <span className="text-sm text-gray-500">Loading…</span>
+                        <div className="divide-y divide-gray-100 animate-pulse">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="flex items-start gap-3 px-6 py-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-gray-200 mt-2 shrink-0" />
+                                    <div className="flex-1 space-y-1.5">
+                                        <div className="h-3 bg-gray-200 rounded w-3/5" />
+                                        <div className="h-2.5 bg-gray-100 rounded w-2/5" />
+                                    </div>
+                                    <div className="h-5 w-12 bg-gray-100 rounded-full shrink-0" />
+                                </div>
+                            ))}
                         </div>
                     ) : openTasksList.length === 0 ? (
                         <div className="px-6 py-8 text-center text-sm text-gray-400">
@@ -250,7 +299,7 @@ export function Dashboard() {
             </div>
 
             {/* Pipeline Overview */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 animate-fade-up delay-200">
                 <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-5">
                     Prospect Pipeline
                 </h2>
@@ -258,7 +307,7 @@ export function Dashboard() {
             </div>
 
             {/* Recent Prospects + Recent Activity */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 animate-fade-up delay-300">
                 {/* Recent Prospects */}
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -273,9 +322,18 @@ export function Dashboard() {
                         </button>
                     </div>
                     {prospectsLoading ? (
-                        <div className="flex items-center gap-2 px-6 py-5">
-                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                            <span className="text-sm text-gray-500">Loading…</span>
+                        <div className="divide-y divide-gray-100 animate-pulse">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="flex items-center gap-4 px-6 py-3">
+                                    <div className="w-9 h-9 rounded-full bg-gray-200 shrink-0" />
+                                    <div className="flex-1 space-y-1.5">
+                                        <div className="h-3 bg-gray-200 rounded w-2/5" />
+                                        <div className="h-2.5 bg-gray-100 rounded w-3/5" />
+                                    </div>
+                                    <div className="h-5 w-14 bg-gray-100 rounded-full shrink-0" />
+                                    <div className="h-2.5 w-10 bg-gray-100 rounded shrink-0" />
+                                </div>
+                            ))}
                         </div>
                     ) : recentProspects.length === 0 ? (
                         <div className="px-6 py-8 text-center text-sm text-gray-400">
@@ -325,9 +383,16 @@ export function Dashboard() {
                         </button>
                     </div>
                     {activityLoading ? (
-                        <div className="flex items-center gap-2 px-6 py-5">
-                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                            <span className="text-sm text-gray-500">Loading…</span>
+                        <div className="px-6 py-4 space-y-4 animate-pulse">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i} className="flex items-start gap-3">
+                                    <div className="w-6 h-6 rounded-full bg-gray-200 shrink-0 mt-0.5" />
+                                    <div className="flex-1 space-y-1.5">
+                                        <div className="h-3 bg-gray-200 rounded w-4/5" />
+                                        <div className="h-2.5 bg-gray-100 rounded w-1/4" />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     ) : activity.length === 0 ? (
                         <div className="px-6 py-8 text-center text-sm text-gray-400">
@@ -342,13 +407,13 @@ export function Dashboard() {
             </div>
 
             {/* Unit Availability */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 animate-fade-up delay-400">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
                         Unit Availability
                     </h2>
                     {!unitsLoading && (
-                        <span className="text-xs text-gray-500 font-medium">{totalUnits} total</span>
+                        <span className="text-xs text-gray-500 font-medium tabular-nums">{animatedTotal} total</span>
                     )}
                 </div>
                 {unitsLoading ? (
@@ -359,11 +424,12 @@ export function Dashboard() {
                 ) : (
                     <div className="grid grid-cols-3 gap-4">
                         {([
-                            { status: 'available', count: availableUnits, bar: 'bg-green-500', label: 'Available' },
-                            { status: 'held', count: heldUnits, bar: 'bg-amber-400', label: 'Held' },
-                            { status: 'leased', count: leasedUnits, bar: 'bg-red-500', label: 'Leased' },
-                        ] as const).map(({ status, count, bar }) => {
+                            { status: 'available', count: availableUnits, animated: animatedAvailable, bar: 'bg-green-500', label: 'Available' },
+                            { status: 'held', count: heldUnits, animated: animatedHeld, bar: 'bg-amber-400', label: 'Held' },
+                            { status: 'leased', count: leasedUnits, animated: animatedLeased, bar: 'bg-red-500', label: 'Leased' },
+                        ] as const).map(({ status, count, animated, bar }) => {
                             const pct = totalUnits > 0 ? Math.round((count / totalUnits) * 100) : 0;
+                            const animatedPct = totalUnits > 0 ? Math.round((animated / totalUnits) * 100) : 0;
                             return (
                                 <div key={status} className="space-y-2">
                                     <div className="flex items-center justify-between">
@@ -371,15 +437,15 @@ export function Dashboard() {
                                             <span className={`inline-block w-2 h-2 rounded-full ${bar}`} />
                                             <StatusBadge variant={status} />
                                         </div>
-                                        <span className="text-sm font-semibold text-gray-900">{count}</span>
+                                        <span className="text-sm font-semibold text-gray-900 tabular-nums">{animated}</span>
                                     </div>
                                     <div className="w-full bg-gray-100 rounded-full h-1.5">
                                         <div
-                                            className={`${bar} h-1.5 rounded-full transition-all`}
-                                            style={{ width: `${pct}%` }}
+                                            className={`${bar} h-1.5 rounded-full transition-none`}
+                                            style={{ width: `${animatedPct}%` }}
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-400">{pct}% of inventory</p>
+                                    <p className="text-xs text-gray-400 tabular-nums">{animatedPct}% of inventory</p>
                                 </div>
                             );
                         })}

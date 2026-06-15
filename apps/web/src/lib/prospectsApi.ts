@@ -27,9 +27,9 @@ export interface StatusTransitionResult {
 }
 
 export const prospectsApi = {
-    list: (status?: ProspectStatus) => {
+    list: (status?: ProspectStatus, signal?: AbortSignal) => {
         const url = status ? `${BASE}?status=${status}` : BASE;
-        return request<Prospect[]>(url);
+        return request<Prospect[]>(url, { signal });
     },
 
     get: (id: string) => request<Prospect>(`${BASE}/${id}`),

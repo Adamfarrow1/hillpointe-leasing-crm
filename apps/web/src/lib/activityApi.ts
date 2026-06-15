@@ -10,7 +10,7 @@ export interface ActivityFilters {
 }
 
 export const activityApi = {
-    list: (filters?: ActivityFilters) => {
+    list: (filters?: ActivityFilters, signal?: AbortSignal) => {
         const params = new URLSearchParams();
         if (filters?.prospectId) params.set('prospectId', filters.prospectId);
         if (filters?.unitId) params.set('unitId', filters.unitId);
@@ -18,6 +18,7 @@ export const activityApi = {
         const qs = params.toString();
         return request<ActivityEventWithRelations[]>(
             `${ACTIVITY_BASE}${qs ? `?${qs}` : ''}`,
+            { signal },
         );
     },
 

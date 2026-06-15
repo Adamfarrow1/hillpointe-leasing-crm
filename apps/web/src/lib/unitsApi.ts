@@ -14,7 +14,7 @@ export interface UpdateUnitPayload {
 }
 
 export const unitsApi = {
-    list: () => request<Unit[]>(BASE),
+    list: (signal?: AbortSignal) => request<Unit[]>(BASE, { signal }),
 
     get: (id: string) => request<Unit>(`${BASE}/${id}`),
 

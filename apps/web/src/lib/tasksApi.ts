@@ -4,7 +4,7 @@ import { request } from './apiClient.js';
 const BASE = '/api/tasks';
 
 export const tasksApi = {
-    list: () => request<TaskWithProspect[]>(BASE),
+    list: (signal?: AbortSignal) => request<TaskWithProspect[]>(BASE, { signal }),
 
     update: (id: string, payload: UpdateTaskInput) =>
         request<TaskWithProspect>(`${BASE}/${id}`, {
