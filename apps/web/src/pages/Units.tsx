@@ -92,8 +92,21 @@ export function Units() {
 
     return (
         <div className="space-y-5">
+            <style>{`
+                @keyframes fadeUp {
+                    from { opacity: 0; transform: translateY(12px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-up {
+                    opacity: 0;
+                    animation: fadeUp 0.4s ease-out forwards;
+                }
+                .delay-100 { animation-delay: 100ms; }
+                .delay-200 { animation-delay: 200ms; }
+            `}</style>
+
             {/* Toolbar */}
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center justify-between gap-4 flex-wrap animate-fade-up">
                 <div className="flex items-center gap-3 flex-wrap flex-1 min-w-0">
                     {/* Search */}
                     <div className="relative w-64">
@@ -161,7 +174,7 @@ export function Units() {
             )}
 
             {/* Table card */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden animate-fade-up delay-100">
                 {/* Summary bar */}
                 <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                     <p className="text-xs text-gray-500">
@@ -184,9 +197,24 @@ export function Units() {
                 </div>
 
                 {loading ? (
-                    <div className="flex items-center justify-center py-16">
-                        <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                    </div>
+                    <table className="w-full text-sm animate-pulse">
+                        <thead>
+                            <tr className="border-b border-gray-200">
+                                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Unit Number</th>
+                                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Status</th>
+                                <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {[...Array(6)].map((_, i) => (
+                                <tr key={i}>
+                                    <td className="py-3.5 px-4"><div className="h-3 bg-gray-200 rounded w-20" /></td>
+                                    <td className="py-3.5 px-4"><div className="h-5 bg-gray-100 rounded-full w-16" /></td>
+                                    <td className="py-3.5 px-4"><div className="h-6 bg-gray-100 rounded w-20 ml-auto" /></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 ) : (
                     <>
                         <UnitsTable

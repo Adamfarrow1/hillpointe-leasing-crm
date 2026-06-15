@@ -73,46 +73,22 @@ function SearchIcon() {
     );
 }
 
-function FilterTab({
-    label,
-    count,
-    active,
-    onClick,
-}: {
-    label: string;
-    count: number;
-    active: boolean;
-    onClick: () => void;
-}) {
-    return (
-        <button
-            onClick={onClick}
-            className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${active
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-        >
-            {label}
-            <span className={`ml-1.5 text-xs ${active ? 'text-blue-400' : 'text-gray-400'}`}>
-                {count}
-            </span>
-        </button>
-    );
-}
-
 function ProspectRow({
     prospect,
     isSelected,
     onClick,
+    animationDelay = 0,
 }: {
     prospect: Prospect;
     isSelected: boolean;
     onClick: () => void;
+    animationDelay?: number;
 }) {
     return (
         <tr
             onClick={onClick}
-            className={`cursor-pointer transition-colors hover:bg-blue-50 ${isSelected ? 'bg-blue-50' : ''}`}
+            className={`cursor-pointer transition-colors hover:bg-blue-50 animate-row-in ${isSelected ? 'bg-blue-50' : ''}`}
+            style={{ animationDelay: `${animationDelay}ms` }}
         >
             <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
@@ -221,31 +197,29 @@ export function Prospects() {
 
     return (
         <div className="space-y-4">
+            <style>{`
+                @keyframes fadeUp {
+                    from { opacity: 0; transform: translateY(12px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-up {
+                    opacity: 0;
+                    animation: fadeUp 0.4s ease-out forwards;
+                }
+                .delay-100 { animation-delay: 100ms; }
+                .delay-200 { animation-delay: 200ms; }
+                .delay-300 { animation-delay: 300ms; }
+                @keyframes rowIn {
+                    from { opacity: 0; transform: translateY(6px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                .animate-row-in {
+                    opacity: 0;
+                    animation: rowIn 0.3s ease-out forwards;
+                }
+            `}</style>
+
             {/* Page header */}
-            <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500">
-                    {loading ? 'Loading…' : (
-                        <>
-                            {filtered.length} prospect{filtered.length !== 1 ? 's' : ''}
-                            {statusFilter !== 'all' && (
-                                <span className="ml-1 text-gray-400">
-                                    in{' '}
-                                    <span className="font-medium text-gray-600">
-                                        {STATUS_LABELS[statusFilter]}
-                                    </span>
-                                </span>
-                            )}
-                        </>
-                    )}
-                </p>
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                    <span className="text-base leading-none">+</span>
-                    New Prospect
-                </button>
-            </div>
 
             {/* Error banner */}
             {error && (
@@ -260,95 +234,155 @@ export function Prospects() {
                 </div>
             )}
 
-            {/* Status filter tabs */}
-            <div className="flex items-center gap-0.5 border-b border-gray-200 overflow-x-auto">
-                <FilterTab
-                    label="All"
-                    count={prospects.length}
-                    active={statusFilter === 'all'}
-                    onClick={() => setStatusFilter('all')}
-                />
-                {ALL_STATUSES.filter((s) => (statusCounts[s] ?? 0) > 0).map((s) => (
-                    <FilterTab
-                        key={s}
-                        label={STATUS_LABELS[s]}
-                        count={statusCounts[s]!}
-                        active={statusFilter === s}
-                        onClick={() => setStatusFilter(s)}
-                    />
-                ))}
-            </div>
+            {/* Toolbar */}
+            <div className="flex items-center justify-between gap-4 flex-wrap animate-fade-up">
+                <div className="flex items-center gap-3 flex-wrap flex-1 min-w-0">
+                    {/* Search */}
+                    <div className="relative w-72">
+                        <SearchIcon />
+                        <input
+                            type="search"
+                            placeholder="Search name, email, phone…"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
 
-            {/* Search + unit filter */}
-            <div className="flex items-center gap-3 flex-wrap">
-                <div className="relative w-72">
-                    <SearchIcon />
-                    <input
-                        type="search"
-                        placeholder="Search name, email, phone…"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-9 pr-4 py-2 w-full text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                    {/* Status pill filter */}
+                    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                        <button
+                            type="button"
+                            onClick={() => setStatusFilter('all')}
+                            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${statusFilter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            All
+                        </button>
+                        {ALL_STATUSES.filter((s) => (statusCounts[s] ?? 0) > 0).map((s) => (
+                            <button
+                                key={s}
+                                type="button"
+                                onClick={() => setStatusFilter(s)}
+                                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${statusFilter === s ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                {STATUS_LABELS[s]}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Unit filter */}
+                    <select
+                        value={unitFilter}
+                        onChange={(e) => setUnitFilter(e.target.value)}
+                        aria-label="Filter by assigned unit"
+                        className="py-2 pl-3 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-700"
+                    >
+                        <option value="all">All Units</option>
+                        <option value="unassigned">Unassigned</option>
+                        {unitOptions.map((u) => (
+                            <option key={u} value={u}>{u}</option>
+                        ))}
+                    </select>
                 </div>
-                <select
-                    value={unitFilter}
-                    onChange={(e) => setUnitFilter(e.target.value)}
-                    aria-label="Filter by assigned unit"
-                    className="py-2 pl-3 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700"
+
+                <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shrink-0"
                 >
-                    <option value="all">All Units</option>
-                    <option value="unassigned">Unassigned</option>
-                    {unitOptions.map((u) => (
-                        <option key={u} value={u}>{u}</option>
-                    ))}
-                </select>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    New Prospect
+                </button>
             </div>
 
-            {/* Table / states */}
-            {loading ? (
-                <div className="flex items-center justify-center py-20">
-                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            {/* Table card */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden animate-fade-up delay-100">
+                {/* Summary bar */}
+                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <p className="text-xs text-gray-500">
+                        {loading ? 'Loading…' : `${filtered.length} of ${prospects.length} prospect${prospects.length !== 1 ? 's' : ''}`}
+                    </p>
+                    {!loading && (
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                            {(Object.entries(
+                                prospects.reduce<Partial<Record<ProspectStatus, number>>>((acc, p) => { acc[p.status] = (acc[p.status] ?? 0) + 1; return acc; }, {})
+                            ) as [ProspectStatus, number][])
+                                .filter(([, n]) => n > 0)
+                                .map(([s, n]) => (
+                                    <span key={s}>{STATUS_LABELS[s]}: {n}</span>
+                                ))}
+                        </div>
+                    )}
                 </div>
+
+            {loading ? (
+                <table className="w-full text-sm animate-pulse">
+                    <thead>
+                        <tr className="border-b border-gray-100 bg-gray-50">
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Prospect</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Contact</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Unit</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Added</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                        {[...Array(7)].map((_, i) => (
+                            <tr key={i}>
+                                <td className="px-4 py-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-gray-200 shrink-0" />
+                                        <div className="h-3 bg-gray-200 rounded w-28" />
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3">
+                                    <div className="space-y-1.5">
+                                        <div className="h-3 bg-gray-200 rounded w-36" />
+                                        <div className="h-2.5 bg-gray-100 rounded w-24" />
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3"><div className="h-5 bg-gray-100 rounded-full w-20" /></td>
+                                <td className="px-4 py-3"><div className="h-3 bg-gray-100 rounded w-10" /></td>
+                                <td className="px-4 py-3"><div className="h-3 bg-gray-100 rounded w-20" /></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             ) : filtered.length === 0 ? (
-                <div className="py-20 text-center text-sm text-gray-500">
-                    {prospects.length === 0 ? 'No prospects yet. Add one to get started.' : 'No prospects match your search.'}
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <p className="text-sm font-medium text-gray-900">
+                        {prospects.length === 0 ? 'No prospects yet' : 'No prospects match your search'}
+                    </p>
+                    {prospects.length === 0 && (
+                        <p className="text-xs text-gray-500 mt-1 mb-4">Get started by adding your first prospect.</p>
+                    )}
                 </div>
             ) : (
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-gray-100 bg-gray-50">
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                    Prospect
-                                </th>
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                    Contact
-                                </th>
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                    Status
-                                </th>
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                    Unit
-                                </th>
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                    Added
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {filtered.map((p) => (
-                                <ProspectRow
-                                    key={p.id}
-                                    prospect={p}
-                                    isSelected={selected?.id === p.id}
-                                    onClick={() => handleRowClick(p)}
-                                />
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr className="border-b border-gray-100 bg-gray-50">
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Prospect</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Contact</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Unit</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Added</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                        {filtered.map((p, i) => (
+                            <ProspectRow
+                                key={p.id}
+                                prospect={p}
+                                isSelected={selected?.id === p.id}
+                                onClick={() => handleRowClick(p)}
+                                animationDelay={i * 30}
+                            />
+                        ))}
+                    </tbody>
+                </table>
             )}
+            </div>
 
             {/* Detail drawer */}
             {selected && (

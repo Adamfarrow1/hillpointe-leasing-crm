@@ -3,14 +3,16 @@ import type { ActivityEventWithRelations } from '@crm/contracts';
 import { activityApi } from '../lib/activityApi';
 import { ActivityTimeline } from '../components/ActivityTimeline';
 import { formatEventType } from '../lib/activityFormatters';
+import { useCountUp } from '../lib/useCountUp';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 function SummaryCard({ label, value, accent }: { label: string; value: number; accent: string }) {
+    const animated = useCountUp(value);
     return (
         <div className="bg-white rounded-xl border border-gray-200 px-5 py-4">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
-            <p className={`text-3xl font-bold mt-1 ${accent}`}>{value}</p>
+            <p className={`text-3xl font-bold mt-1 tabular-nums ${accent}`}>{animated}</p>
         </div>
     );
 }
@@ -97,13 +99,27 @@ export function Activity() {
 
     return (
         <div className="space-y-6">
+            <style>{`
+                @keyframes fadeUp {
+                    from { opacity: 0; transform: translateY(12px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-up {
+                    opacity: 0;
+                    animation: fadeUp 0.4s ease-out forwards;
+                }
+                .delay-100 { animation-delay: 100ms; }
+                .delay-200 { animation-delay: 200ms; }
+                .delay-300 { animation-delay: 300ms; }
+            `}</style>
+
             {/* Subtitle */}
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 animate-fade-up">
                 Audit trail of prospect, unit, task, and tour workflow events.
             </p>
 
             {/* Summary cards */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-4 animate-fade-up delay-100">
                 <SummaryCard label="Total Events" value={events.length} accent="text-gray-800" />
                 <SummaryCard label="Status Changes" value={statusChanges} accent="text-blue-600" />
                 <SummaryCard label="Task Events" value={taskEvents} accent="text-purple-600" />
@@ -121,7 +137,7 @@ export function Activity() {
             )}
 
             {/* Filters */}
-            <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center gap-3 flex-wrap">
+            <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center gap-3 flex-wrap animate-fade-up delay-200">
                 {/* Text search */}
                 <div className="relative flex-1 min-w-[200px]">
                     <SearchIcon />
@@ -179,7 +195,7 @@ export function Activity() {
             )}
 
             {/* Timeline */}
-            <div className="bg-white rounded-xl border border-gray-200 px-6 py-5">
+            <div className="bg-white rounded-xl border border-gray-200 px-6 py-5 animate-fade-up delay-300">
                 <ActivityTimeline
                     events={filtered}
                     loading={loading}

@@ -4,6 +4,7 @@ import { toursApi } from '../lib/toursApi';
 import type { TourRuleResult } from '../lib/toursApi';
 import { ScheduleTourModal } from '../components/ScheduleTourModal';
 import { RecordOutcomeModal } from '../components/RecordOutcomeModal';
+import { useCountUp } from '../lib/useCountUp';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -51,10 +52,11 @@ function OutcomeBadge({ outcome }: { outcome: string | null }) {
 // ─── summary card ─────────────────────────────────────────────────────────────
 
 function SummaryCard({ label, value, accent }: { label: string; value: number; accent: string }) {
+    const animated = useCountUp(value);
     return (
         <div className="bg-white rounded-xl border border-gray-200 px-5 py-4">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
-            <p className={`text-3xl font-bold mt-1 ${accent}`}>{value}</p>
+            <p className={`text-3xl font-bold mt-1 tabular-nums ${accent}`}>{animated}</p>
         </div>
     );
 }
@@ -167,8 +169,30 @@ export function Tours() {
 
     return (
         <div className="space-y-6">
+            <style>{`
+                @keyframes fadeUp {
+                    from { opacity: 0; transform: translateY(12px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-up {
+                    opacity: 0;
+                    animation: fadeUp 0.4s ease-out forwards;
+                }
+                .delay-100 { animation-delay: 100ms; }
+                .delay-200 { animation-delay: 200ms; }
+                .delay-300 { animation-delay: 300ms; }
+                @keyframes rowIn {
+                    from { opacity: 0; transform: translateY(6px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                .animate-row-in {
+                    opacity: 0;
+                    animation: rowIn 0.3s ease-out forwards;
+                }
+            `}</style>
+
             {/* Subtitle + action */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between animate-fade-up">
                 <p className="text-sm text-gray-500">
                     Schedule, reschedule, and record leasing tour outcomes.
                 </p>
@@ -182,7 +206,7 @@ export function Tours() {
             </div>
 
             {/* Summary cards */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-4 animate-fade-up delay-100">
                 <SummaryCard label="Upcoming" value={upcomingCount} accent="text-blue-600" />
                 <SummaryCard label="Completed" value={completedCount} accent="text-green-600" />
                 <SummaryCard label="No Shows" value={noShowCount} accent="text-red-600" />
@@ -203,9 +227,38 @@ export function Tours() {
             )}
 
             {/* Tour list */}
+            <div className="animate-fade-up delay-200">
             {loading ? (
-                <div className="flex items-center justify-center py-20">
-                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-gray-100 bg-gray-50">
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Prospect</th>
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Unit</th>
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Scheduled</th>
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Agent</th>
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Outcome</th>
+                                <th className="px-4 py-3" />
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50 animate-pulse">
+                            {[...Array(6)].map((_, i) => (
+                                <tr key={i}>
+                                    <td className="px-4 py-3">
+                                        <div className="space-y-1.5">
+                                            <div className="h-3 bg-gray-200 rounded w-32" />
+                                            <div className="h-2.5 bg-gray-100 rounded w-40" />
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3"><div className="h-3 bg-gray-100 rounded w-12" /></td>
+                                    <td className="px-4 py-3"><div className="h-3 bg-gray-200 rounded w-36" /></td>
+                                    <td className="px-4 py-3"><div className="h-3 bg-gray-100 rounded w-20" /></td>
+                                    <td className="px-4 py-3"><div className="h-5 bg-gray-100 rounded-full w-20" /></td>
+                                    <td className="px-4 py-3"><div className="h-6 bg-gray-100 rounded w-20 ml-auto" /></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             ) : tours.length === 0 ? (
                 <div className="bg-white rounded-xl border border-gray-200 py-20 text-center">
@@ -227,12 +280,16 @@ export function Tours() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {tours.map((tour) => {
+                            {tours.map((tour, i) => {
                                 const hasOutcome = tour.outcome !== null;
                                 const overdue = !hasOutcome && isPast(tour.scheduledAt);
 
                                 return (
-                                    <tr key={tour.id} className={`hover:bg-gray-50 transition-colors ${overdue ? 'bg-amber-50' : ''}`}>
+                                    <tr
+                                        key={tour.id}
+                                        className={`hover:bg-gray-50 transition-colors animate-row-in ${overdue ? 'bg-amber-50' : ''}`}
+                                        style={{ animationDelay: `${i * 30}ms` }}
+                                    >
                                         <td className="px-4 py-3">
                                             <p className="font-medium text-gray-900">{tour.prospect.name}</p>
                                             <p className="text-xs text-gray-400">{tour.prospect.email}</p>
@@ -282,6 +339,7 @@ export function Tours() {
                     </table>
                 </div>
             )}
+            </div>
 
             {/* Schedule Tour modal */}
             {schedulingNew && (
