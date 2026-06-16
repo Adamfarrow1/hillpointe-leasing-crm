@@ -242,10 +242,11 @@ The `api` start script runs `prisma migrate deploy && node dist/server.js`.
 **Steps:**
 1. New project → **Import** this repo
 2. In the project settings set:
-   - **Root Directory:** `apps/web`
-   - **Framework Preset:** Vite
-   - **Build Command:** `npm run build` *(or leave as detected)*
-   - **Output Directory:** `dist`
+   - **Root Directory:** `/` *(repo root — needed so Vercel can access `packages/contracts`)*
+   - **Framework Preset:** Vite *(or Other)*
+   - **Build Command:** `npm run build --workspace=@crm/contracts && npm run build --workspace=web`
+   - **Output Directory:** `apps/web/dist`
+   - **Install Command:** `npm install --workspaces --include-workspace-root`
 3. Add this **Environment Variable:**
 
 | Variable | Value |
