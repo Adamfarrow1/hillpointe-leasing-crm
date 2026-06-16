@@ -9,20 +9,6 @@ const pageTitles: Record<string, string> = {
     '/activity': 'Activity',
 };
 
-function SearchIcon() {
-    return (
-        <svg
-            className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-        >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
-        </svg>
-    );
-}
-
 export function Header() {
     const { pathname } = useLocation();
     const title = pageTitles[pathname] ?? 'Hillpointe';

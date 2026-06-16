@@ -427,8 +427,7 @@ export function Dashboard() {
                             { status: 'available', count: availableUnits, animated: animatedAvailable, bar: 'bg-green-500', label: 'Available' },
                             { status: 'held', count: heldUnits, animated: animatedHeld, bar: 'bg-amber-400', label: 'Held' },
                             { status: 'leased', count: leasedUnits, animated: animatedLeased, bar: 'bg-red-500', label: 'Leased' },
-                        ] as const).map(({ status, count, animated, bar }) => {
-                            const pct = totalUnits > 0 ? Math.round((count / totalUnits) * 100) : 0;
+                        ] as const).map(({ status, animated, bar }) => {
                             const animatedPct = totalUnits > 0 ? Math.round((animated / totalUnits) * 100) : 0;
                             return (
                                 <div key={status} className="space-y-2">
