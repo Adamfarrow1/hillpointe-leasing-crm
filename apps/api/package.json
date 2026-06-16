@@ -7,7 +7,7 @@
         "dev": "tsx watch src/server.ts",
         "build": "npm run build -w @crm/contracts && prisma generate && tsc",
         "postinstall": "prisma generate",
-        "start": "node dist/server.js",
+        "start": "prisma migrate deploy && node dist/server.js",
         "test": "vitest run",
         "test:watch": "vitest",
         "prisma:migrate": "prisma migrate dev",

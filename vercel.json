@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm install --workspaces --include-workspace-root && npm run build -w @crm/contracts && npm run build -w web",
+  "buildCommand": "npm run build -w @crm/contracts && npm run build -w web",
   "outputDirectory": "apps/web/dist",
-  "installCommand": "echo 'skipped'"
+  "installCommand": "npm install --workspaces --include-workspace-root"
 }
