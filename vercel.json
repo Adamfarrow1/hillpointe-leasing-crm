@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build --workspace=@crm/contracts && npm run build --workspace=web",
   "outputDirectory": "apps/web/dist",
-  "installCommand": "npm install --workspaces --include-workspace-root",
+  "installCommand": "npm install --workspaces --include-workspace-root && cd apps/web && npm install",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
