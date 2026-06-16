@@ -32,14 +32,7 @@ export function Header() {
             <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
 
             <div className="flex items-center gap-4">
-                <div className="relative">
-                    <SearchIcon />
-                    <input
-                        type="search"
-                        placeholder="Search prospects, units…"
-                        className="pl-9 pr-4 py-2 text-sm bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:bg-white focus:border-blue-500 w-64 transition-colors"
-                    />
-                </div>
+                
 
                 <div className="flex items-center gap-2.5 pl-4 border-l border-gray-200">
                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">

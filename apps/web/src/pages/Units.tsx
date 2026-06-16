@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect, useCallback } from 'react';
+﻿import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import type { Unit, UnitStatus } from '@crm/contracts';
 import { unitsApi } from '../lib/unitsApi';
 import { UnitsTable } from '../components/UnitsTable';
@@ -25,20 +25,31 @@ export function Units() {
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
 
+    const abortRef = useRef<AbortController | null>(null);
+
     const loadUnits = useCallback(async () => {
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+        const { signal } = controller;
+
         setLoading(true);
         setError(null);
         try {
-            const data = await unitsApi.list();
+            const data = await unitsApi.list(signal);
             setUnits(data);
         } catch (err) {
+            if (err instanceof DOMException && err.name === 'AbortError') return;
             setError(err instanceof Error ? err.message : 'Failed to load units');
         } finally {
-            setLoading(false);
+            if (!signal.aborted) setLoading(false);
         }
     }, []);
 
-    useEffect(() => { void loadUnits(); }, [loadUnits]);
+    useEffect(() => {
+        void loadUnits();
+        return () => { abortRef.current?.abort(); };
+    }, [loadUnits]);
 
     const filtered = useMemo(() => {
         return units.filter((u) => {
@@ -178,7 +189,7 @@ export function Units() {
                 {/* Summary bar */}
                 <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                     <p className="text-xs text-gray-500">
-                        {loading ? 'Loadingâ€¦' : `${filtered.length} of ${units.length} unit${units.length !== 1 ? 's' : ''}`}
+                        {loading ? 'Loading' : `${filtered.length} of ${units.length} unit${units.length !== 1 ? 's' : ''}`}
                     </p>
                     <div className="flex items-center gap-3 text-xs text-gray-500">
                         <span className="flex items-center gap-1">

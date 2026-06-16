@@ -55,8 +55,11 @@ function SummaryCard({ label, value, accent }: { label: string; value: number; a
     const animated = useCountUp(value);
     return (
         <div className="bg-white rounded-xl border border-gray-200 px-5 py-4">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
-            <p className={`text-3xl font-bold mt-1 tabular-nums ${accent}`}>{animated}</p>
+            <div className="flex items-center gap-2 mb-2">
+                <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${accent}`} />
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
+            </div>
+            <p className="text-3xl font-bold mt-1 tabular-nums text-gray-900">{animated}</p>
         </div>
     );
 }
@@ -207,10 +210,10 @@ export function Tours() {
 
             {/* Summary cards */}
             <div className="grid grid-cols-4 gap-4 animate-fade-up delay-100">
-                <SummaryCard label="Upcoming" value={upcomingCount} accent="text-blue-600" />
-                <SummaryCard label="Completed" value={completedCount} accent="text-green-600" />
-                <SummaryCard label="No Shows" value={noShowCount} accent="text-red-600" />
-                <SummaryCard label="Cancelled" value={cancelledCount} accent="text-gray-600" />
+                <SummaryCard label="Upcoming" value={upcomingCount} accent="bg-blue-500" />
+                <SummaryCard label="Completed" value={completedCount} accent="bg-green-500" />
+                <SummaryCard label="No Shows" value={noShowCount} accent="bg-red-500" />
+                <SummaryCard label="Cancelled" value={cancelledCount} accent="bg-gray-400" />
             </div>
 
             {/* Automation banner */}

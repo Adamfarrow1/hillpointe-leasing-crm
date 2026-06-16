@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import hpLogo from '../assets/hp_logo.jpg';
 
 interface NavItem {
     path: string;
@@ -69,9 +70,12 @@ const navItems: NavItem[] = [
 export function Sidebar() {
     return (
         <aside className="w-60 bg-white border-r border-gray-200 flex flex-col shrink-0">
-            <div className="px-6 py-5 border-b border-gray-200">
-                <p className="text-base font-bold text-gray-900 leading-tight">Hillpointe</p>
-                <p className="text-xs text-gray-500 mt-0.5 font-medium">Leasing CRM</p>
+            <div className="px-4 py-4 border-b border-gray-200 flex items-center gap-3">
+                <img src={hpLogo} alt="Hillpointe" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                <div>
+                    <p className="text-base font-bold text-gray-900 leading-tight">Hillpointe</p>
+                    <p className="text-xs text-gray-500 font-medium">Leasing CRM</p>
+                </div>
             </div>
             <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
                 {navItems.map((item) => (
