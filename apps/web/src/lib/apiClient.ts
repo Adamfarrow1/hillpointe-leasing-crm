@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL ?? '';
+const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
 /**
  * Shared HTTP request helper used by all API modules.
