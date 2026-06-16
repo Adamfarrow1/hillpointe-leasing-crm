@@ -1,8 +1,11 @@
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
+
 /**
  * Shared HTTP request helper used by all API modules.
  * Parses JSON, throws on non-2xx responses with the server's error message.
  */
-export async function request<T>(url: string, init?: RequestInit): Promise<T> {
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+    const url = `${API_BASE}${path}`;
     const res = await fetch(url, {
         headers: { 'Content-Type': 'application/json' },
         ...init,
