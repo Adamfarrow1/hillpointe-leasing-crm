@@ -198,6 +198,34 @@ Prospect --< Tour >-- Unit
 - **Authentication** — No auth or RBAC implemented. A production version would add JWT-based authentication and role-based permissions (leasing agent vs. manager).
 - **Database** — SQLite is used for take-home simplicity. A production version would use Postgres for stronger relational integrity and concurrent write support.
 - **Search and filtering** — Prospect search is currently client-side. A production version would implement server-side full-text search with pagination.
+
+## Deployment (Railway)
+
+The app deploys as a single Railway service. The Express API builds the Vite frontend and serves it as static files in production, so only one service is needed.
+
+### Railway Setup
+
+1. Create a new project → **Deploy from GitHub repo**
+2. Select this repository
+3. Set **Root Directory** to `.` (repo root)
+4. Expand **Build and Output Settings** and set:
+   - **Build command:** `npm run build`
+   - **Start command:** `npm run start`
+5. Add a **Volume** and mount it at `/data` (stores the SQLite database)
+6. Add these **Environment Variables**:
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | `file:/data/prod.db` |
+| `NODE_ENV` | `production` |
+
+### How it works in production
+
+- `npm run build` compiles contracts → Vite frontend → API TypeScript in order
+- `npm run start` runs `prisma migrate deploy` then `node dist/server.js`
+- Express serves `/api/*` routes normally
+- All other routes serve `apps/web/dist/index.html` so React Router handles navigation
+- The SQLite database persists on the Railway volume at `/data/prod.db`
 - **Tests** — Vitest integration tests cover all six automation rules and the completed tour outcome transaction (8 tests).
 
 ## Continuous Integration
