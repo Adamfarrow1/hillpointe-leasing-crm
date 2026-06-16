@@ -1,10 +1,13 @@
-import type { TaskWithProspect, UpdateTaskInput } from '@crm/contracts';
+import type { TaskWithProspect, UpdateTaskInput, CreateTaskInput } from '@crm/contracts';
 import { request } from './apiClient.js';
 
 const BASE = '/api/tasks';
 
 export const tasksApi = {
     list: (signal?: AbortSignal) => request<TaskWithProspect[]>(BASE, { signal }),
+
+    create: (payload: CreateTaskInput) =>
+        request<TaskWithProspect>(BASE, { method: 'POST', body: JSON.stringify(payload) }),
 
     update: (id: string, payload: UpdateTaskInput) =>
         request<TaskWithProspect>(`${BASE}/${id}`, {

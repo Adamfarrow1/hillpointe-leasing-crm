@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Prospect, ProspectStatus } from '@crm/contracts';
 import { prospectsApi } from '../lib/prospectsApi';
+import { tasksApi } from '../lib/tasksApi';
 import { StatusBadge } from '../components/StatusBadge';
 import { ProspectDrawer } from '../components/ProspectDrawer';
 import { ProspectFormModal } from '../components/ProspectFormModal';
@@ -187,6 +188,20 @@ export function Prospects() {
         setProspects((prev) => [created, ...prev]);
         setShowCreateModal(false);
         setSelected(created);
+
+        // Auto-create a "Reach out to <name>" task due tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dueDate = tomorrow.toISOString().slice(0, 10);
+        tasksApi.create({
+            title: `Reach out to ${created.name}`,
+            dueDate,
+            prospectId: created.id,
+            assignee: null,
+            priority: 'medium',
+        }).catch(() => {
+            // non-blocking — prospect was still created successfully
+        });
     }
 
     function handleProspectEdited(updated: Prospect) {

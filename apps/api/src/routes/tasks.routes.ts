@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { TaskQuerySchema, UpdateTaskSchema } from '@crm/contracts';
+import { TaskQuerySchema, UpdateTaskSchema, CreateTaskSchema } from '@crm/contracts';
 import { prisma } from '../lib/prisma.js';
 
 export const tasksRouter = Router();
@@ -77,7 +77,24 @@ tasksRouter.get('/', async (req, res) => {
     res.json(tasks.map(toResponse));
 });
 
-// PATCH /api/tasks/:id/complete
+// POST /api/tasks — create a new task
+tasksRouter.post('/', async (req, res) => {
+    const parsed = CreateTaskSchema.safeParse(req.body);
+    if (!parsed.success) {
+        res.status(400).json({ error: 'Validation failed', issues: parsed.error.issues });
+        return;
+    }
+    const { title, dueDate, prospectId, assignee, priority } = parsed.data;
+    if (!prospectId) {
+        res.status(400).json({ error: 'prospectId is required' });
+        return;
+    }
+    const task = await prisma.task.create({
+        data: { title, dueDate, prospectId, assignee, priority, state: 'open' },
+        include: { prospect: { select: PROSPECT_SELECT } },
+    });
+    res.status(201).json(toResponse(task));
+});
 tasksRouter.patch('/:id/complete', async (req, res) => {
     try {
         const task = await prisma.task.update({
