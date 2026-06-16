@@ -32,7 +32,7 @@ I finished all of Tier 3 (status filtering, client-side search, assignee filter,
 1. Server-side search and pagination — client-side filtering is fine for demo data but won't scale
 2. Auth — even basic session-based auth before this touched a real environment
 3. Swap SQLite for Postgres for proper constraints and concurrent write safety
-4. Deploy somewhere (Render, Railway, etc.)
+4. Responsive / mobile-friendly UI — the current layout is desktop-first; a production version would adapt the sidebar, tables, and drawers for smaller screens
 
 ## Tradeoffs I Made
 
@@ -55,4 +55,4 @@ Everything generated was reviewed, run locally, and adjusted where needed.
 - SQLite — not production-ready for concurrent writes or strict referential integrity
 - No auth or Role Based Access Control
 - Filtering and search are client-side only
-- Not deployed anywhere
+- Deployed: API on Railway, frontend on Vercel

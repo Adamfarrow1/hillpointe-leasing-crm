@@ -189,7 +189,7 @@ Prospect --< Tour >-- Unit
 | Item | Status |
 |---|---|
 | Git repository | Current repo |
-| Live deployment | TODO |
+| Live deployment | ✅ API on Railway, Frontend on Vercel |
 | `NOTES.md` | ✅ Included |
 | `README.md` | ✅ Included |
 
@@ -198,6 +198,7 @@ Prospect --< Tour >-- Unit
 - **Authentication** — No auth or RBAC implemented. A production version would add JWT-based authentication and role-based permissions (leasing agent vs. manager).
 - **Database** — SQLite is used for take-home simplicity. A production version would use Postgres for stronger relational integrity and concurrent write support.
 - **Search and filtering** — Prospect search is currently client-side. A production version would implement server-side full-text search with pagination.
+- **Responsive design** — The UI is desktop-first. A production version would adapt the sidebar, data tables, and drawers for tablet and mobile viewports.
 
 ## Deployment
 
